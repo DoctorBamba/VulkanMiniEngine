@@ -1,0 +1,383 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;c++;cppm;ixx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;h++;hm;inl;inc;ipp;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Resource Files\Shaders">
+      <UniqueIdentifier>{90416307-1436-44a3-a5b0-ada78b8b017c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Engine">
+      <UniqueIdentifier>{ab85f944-ad70-415f-9103-064e708ba40a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine">
+      <UniqueIdentifier>{5694fd6e-a94f-4e79-b2e0-42fe34975478}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\Deafults">
+      <UniqueIdentifier>{f55b8166-a9db-4bdf-8bc2-59aede6cd92e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics">
+      <UniqueIdentifier>{69a35bde-d45e-4762-9dca-c8b377bfa260}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Graphics">
+      <UniqueIdentifier>{d79d1d26-0f25-4d51-ae28-aec33a58cde8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Graphics\Buffers">
+      <UniqueIdentifier>{13582acc-acc9-4486-8530-a6229de791d2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene">
+      <UniqueIdentifier>{1380e5c6-6ff7-4853-a087-1b3d56f15ebf}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene">
+      <UniqueIdentifier>{8ce86a33-8200-43c5-b5e4-869012f2ea54}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Engine\ResourcesManagers">
+      <UniqueIdentifier>{7dff2029-100e-4a8f-a4ca-f0358976392a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Scene\Planet">
+      <UniqueIdentifier>{61b89de2-6978-4f06-9b65-f9ebf48bb551}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Planet">
+      <UniqueIdentifier>{cb181dcb-e6b5-423d-99ca-6e3f6d43c73e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\RayTracing">
+      <UniqueIdentifier>{154c75ce-9a31-4a4e-9366-e706c49a0d89}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Planet\PlanetGeneration">
+      <UniqueIdentifier>{c7449ac8-6d4f-44d6-8e73-734bf51b945e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Scene\Planet">
+      <UniqueIdentifier>{81101112-8b9b-44eb-936f-ba52d6d17080}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="CApplication.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Workspace.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="CGraphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_Renderer.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\SimpleComplie.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_Events.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_Graphics.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Deafults\VulkanDefaultStates.h">
+      <Filter>Header Files\Engine\Deafults</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CFrameBuffer.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CTextureBase.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CPipeline.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\FormatsMap.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CGpuTask.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_RendererPorts.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CBuffer.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CMemoryManager.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CAllocator.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CIntermidiate.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CLocalBuffer.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CVertexBuffer.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CGameObject.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CMesh.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CMaterial.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CUniformBuffer.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_GpuStructures.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CAnimation.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CArmature.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CScene.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CCamera.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="Directory.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CDescriptorPool.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_GameObjectsManager.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="VulkanExtentions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_BasicMeshs.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\Engine_BasicSamplers.h">
+      <Filter>Header Files\Engine</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ResourcesManagers\Engine_ResourcesManager.h">
+      <Filter>Header Files\Engine\ResourcesManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\Buffers\CStorgeBuffer.h">
+      <Filter>Header Files\Graphics\Buffers</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\CLight.h">
+      <Filter>Header Files\Scene</Filter>
+    </ClInclude>
+    <ClInclude Include="CPcInput.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CRenderPass.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Planet\CSun.h">
+      <Filter>Header Files\Scene\Planet</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Planet\CPlanetOcean.h">
+      <Filter>Header Files\Scene\Planet</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Planet\CPlanet.h">
+      <Filter>Header Files\Scene\Planet</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Planet\CPlanetAtmosphere.h">
+      <Filter>Header Files\Scene\Planet</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CTextureCube.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CTexture2D.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Scene\Planet\CPlanetSurface.h">
+      <Filter>Header Files\Scene\Planet</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ResourcesManagers\Engine_DataBlocks.h">
+      <Filter>Header Files\Engine\ResourcesManagers</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="CApplication.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CWindow.h">
+      <Filter>Header Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Source.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="CGraphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_Renderer.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\SimpleCompile.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_Events.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_Graphics.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CTextureBase.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CFrameBuffer.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CPipeline.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_RendererPorts.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CGameObject.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CArmature.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CMesh.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CObjectsClassification.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CScene.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Directory.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_RendererDraw.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_GameObjectsManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="VulkanExtentions.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CMemoryManager.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_BasicMesh.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_BasicSamplers.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\Engine_ResourceManager.cpp">
+      <Filter>Source Files\Engine</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CGpuTask.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CLight.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CRenderPass.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CTextureCube.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CTexture2D.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Planet\CPlanetOcean.cpp">
+      <Filter>Source Files\Scene\Planet</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Planet\CPlanetSurface.cpp">
+      <Filter>Source Files\Scene\Planet</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\Planet\CPlanetAtmosphere.cpp">
+      <Filter>Source Files\Scene\Planet</Filter>
+    </ClCompile>
+    <ClCompile Include="Scene\CMaterial.cpp">
+      <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Engine\Shaders\GBufferWrite.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\GBufferWrite.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Framequad.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Deferred.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Materials.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Lights.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Textures.glsl">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Surface.vert">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Surface.tesc">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Surface.tese">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Surface.geom">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Surface.frag">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Atmosphere.frag">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\RayTracing\RayGenerator.glsl">
+      <Filter>Resource Files\Shaders\RayTracing</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Ocean.tesc">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Ocean.tese">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\OceanMap.glsl">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\Ocean.frag">
+      <Filter>Resource Files\Shaders\Planet</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\PlanetGeneration\SurfaceGeneration.vert">
+      <Filter>Resource Files\Shaders\Planet\PlanetGeneration</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\PlanetGeneration\SurfaceGeneration.frag">
+      <Filter>Resource Files\Shaders\Planet\PlanetGeneration</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\PlanetGeneration\SurfaceGeneration.glsl">
+      <Filter>Resource Files\Shaders\Planet\PlanetGeneration</Filter>
+    </None>
+    <None Include="Engine\Shaders\Planet\PlanetGeneration\SurfaceGeneration.geom">
+      <Filter>Resource Files\Shaders\Planet\PlanetGeneration</Filter>
+    </None>
+    <None Include="PixelShader.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+  </ItemGroup>
+</Project>
