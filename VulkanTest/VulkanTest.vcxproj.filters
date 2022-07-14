@@ -58,6 +58,9 @@
     <Filter Include="Source Files\Scene\Planet">
       <UniqueIdentifier>{81101112-8b9b-44eb-936f-ba52d6d17080}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Source Files\Engine\ResourcesManager">
+      <UniqueIdentifier>{ff059abe-6764-44cc-bf0b-445b1308d197}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CApplication.h">
@@ -153,9 +156,6 @@
     <ClInclude Include="Graphics\CDescriptorPool.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Engine\Engine_GameObjectsManager.h">
-      <Filter>Header Files\Engine</Filter>
-    </ClInclude>
     <ClInclude Include="VulkanExtentions.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -202,6 +202,9 @@
       <Filter>Header Files\Scene\Planet</Filter>
     </ClInclude>
     <ClInclude Include="Engine\ResourcesManagers\Engine_DataBlocks.h">
+      <Filter>Header Files\Engine\ResourcesManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Engine\ResourcesManagers\Engine_GameObjectsManager.h">
       <Filter>Header Files\Engine\ResourcesManagers</Filter>
     </ClInclude>
   </ItemGroup>
@@ -263,9 +266,6 @@
     <ClCompile Include="Engine\Engine_RendererDraw.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
-    <ClCompile Include="Engine\Engine_GameObjectsManager.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
     <ClCompile Include="VulkanExtentions.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -276,9 +276,6 @@
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Engine\Engine_BasicSamplers.cpp">
-      <Filter>Source Files\Engine</Filter>
-    </ClCompile>
-    <ClCompile Include="Engine\Engine_ResourceManager.cpp">
       <Filter>Source Files\Engine</Filter>
     </ClCompile>
     <ClCompile Include="Graphics\CGpuTask.cpp">
@@ -307,6 +304,12 @@
     </ClCompile>
     <ClCompile Include="Scene\CMaterial.cpp">
       <Filter>Source Files\Scene</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\ResourcesManagers\Engine_GameObjectsManager.cpp">
+      <Filter>Source Files\Engine\ResourcesManager</Filter>
+    </ClCompile>
+    <ClCompile Include="Engine\ResourcesManagers\Engine_ResourceManager.cpp">
+      <Filter>Source Files\Engine\ResourcesManager</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

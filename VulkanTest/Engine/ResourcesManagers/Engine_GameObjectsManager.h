@@ -1,5 +1,5 @@
 #pragma once
-#include "../Graphics/CAllocator.h"
+#include "../../Graphics/CAllocator.h"
 
 #define ENGINE_MAXIMUM_VIEWS_COUNT						16
 #define ENGINE_MAXIMUM_GAMEOBJECTS_COUNT				100000

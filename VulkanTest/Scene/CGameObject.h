@@ -1,7 +1,7 @@
 #pragma once
 
 #include "CMesh.h"
-#include "../Engine/Engine_GameObjectsManager.h"//For Generate objects ids
+#include "../Engine/ResourcesManagers/Engine_GameObjectsManager.h"//For Generate objects ids
 
 namespace Engine
 {

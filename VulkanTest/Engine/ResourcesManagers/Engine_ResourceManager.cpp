@@ -1,4 +1,4 @@
-#include "ResourcesManagers/Engine_ResourcesManager.h"
+#include "Engine_ResourcesManager.h"
 
 Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_limit_)
 {
