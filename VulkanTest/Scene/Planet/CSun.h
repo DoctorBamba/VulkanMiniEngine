@@ -21,12 +21,12 @@ class CSun : public CLight
 											  {0, 1, VK_FORMAT_R32G32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX } };		//Texcoords
 
 
-			StandartPipelineInfo pipeline_info = {};
-			pipeline_info.PipelineLayout			 = Engine::renderer->GetLayout();
+			PipelineState pipeline_info = {};
+			pipeline_info.DefaultPipelineLayout			 = Engine::renderer->GetLayout();
 			pipeline_info.PrimitiveTopology			 = VK_PRIMITIVE_TOPOLOGY_PATCH_LIST;
 			pipeline_info.VertexStageInput			 = vertex_inputs;
-			pipeline_info.VertexStage				 = Engine::CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Planet/Sun.vert", VK_SHADER_STAGE_VERTEX_BIT);
-			pipeline_info.FargmentStage				 = Engine::CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Planet/Sun.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+			pipeline_info.vertexStage				 = Engine::CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Planet/Sun.vert", VK_SHADER_STAGE_VERTEX_BIT);
+			pipeline_info.fargmentStage				 = Engine::CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Planet/Sun.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
 			pipeline_info.RasterizationState		 = &VulkanUsefuls_RasterizerState(VULKAN_USEFULS_RASTERIZER_STATE_FILL);
 			pipeline_info.MultisampleState			 = &VulkanUsefuls_MultisamplerState(VULKAN_USEFULS_MULTISAMPLE_STATE_DEFAULT);
 			pipeline_info.ColorBlendState			 = &VulkanUsefuls_BlendState(VULKAN_USEFULS_BLEND_STATE_REGULAR);
@@ -44,12 +44,12 @@ class CSun : public CLight
 			offset_transform = Scale(Vector3D(10, 10, 10));
 		}
 
-		Void Render(CGpuDrawTask* draw_task_) override
+		Void Draw(CGpuDrawTask* draw_task_) override
 		{
 			Vector3D	position;
 			Vector3D	scale;
 			Quaternion	orientation;
-			DismantleTransform(GetTransform(), &position, &scale, &orientation);
+			DecomposeTransform(GetTransform(), &position, &scale, &orientation);
 
 			Matrix4D transform = GetTransform();
 

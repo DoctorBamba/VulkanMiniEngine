@@ -19,7 +19,7 @@ Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_lim
     pool_desc.pPoolSizes    = pool_sizes;
     pool_desc.maxSets       = 1;
 
-    if (vkCreateDescriptorPool(p_DeviceContext->device, &pool_desc, nullptr, &static_descriptor_pool) != VK_SUCCESS)
+    if (vkCreateDescriptorPool(p_Device->device, &pool_desc, nullptr, &static_descriptor_pool) != VK_SUCCESS)
     {
         throw std::runtime_error("ResourcesMenager :: CreateStaticDescriptorSet -> Failed to create the descriptor pool!");
         return;
@@ -33,15 +33,15 @@ Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_lim
 	materials_binding.binding				= 0;
 	materials_binding.descriptorType		= VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
 	materials_binding.descriptorCount		= 1;
-	materials_binding.stageFlags			= VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+	materials_binding.stageFlags			= VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 
 	VkDescriptorSetLayoutBinding textures_binding{};
 	textures_binding.binding				= 1;
 	textures_binding.descriptorType			= VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 	textures_binding.descriptorCount		= textures_count_limit_;
-	textures_binding.stageFlags				= VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
+	textures_binding.stageFlags				= VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT | VK_SHADER_STAGE_TESSELLATION_EVALUATION_BIT;
 
-	VkDescriptorSetLayoutBinding statics_binds[] = { materials_binding, textures_binding };
+	VkDescriptorSetLayoutBinding statics_bindings[] = { materials_binding, textures_binding };
 
 	VkDescriptorBindingFlags flags[2];
 	flags[0] = 0;
@@ -54,11 +54,11 @@ Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_lim
 
 	descriptor_set_layout_desc = {};
 	descriptor_set_layout_desc.sType		= VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
-	descriptor_set_layout_desc.bindingCount = array_size(statics_binds);
-	descriptor_set_layout_desc.pBindings	= statics_binds;
+	descriptor_set_layout_desc.bindingCount = array_size(statics_bindings);
+	descriptor_set_layout_desc.pBindings	= statics_bindings;
 	descriptor_set_layout_desc.pNext		= &binding_flags;
 
-	if (vkCreateDescriptorSetLayout(p_DeviceContext->device, &descriptor_set_layout_desc, nullptr, &static_descriptor_set_layout) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(p_Device->device, &descriptor_set_layout_desc, nullptr, &static_descriptor_set_layout) != VK_SUCCESS)
 	{
 		throw std::runtime_error("ResourcesMenager :: CreateStaticDescriptorSet -> Failed to create descriptor set layout!");
 		return;
@@ -77,7 +77,7 @@ Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_lim
 	allocation_info.pSetLayouts			= &static_descriptor_set_layout;
 	allocation_info.pNext				= &allocation_info_set_counts;
 
-	if (vkAllocateDescriptorSets(p_DeviceContext->device, &allocation_info, &static_descriptor_set) != VK_SUCCESS)
+	if (vkAllocateDescriptorSets(p_Device->device, &allocation_info, &static_descriptor_set) != VK_SUCCESS)
 	{
 		throw std::runtime_error("ResourcesMenager :: CreateStaticDescriptorSet Error -> Failed to allocate descriptor sets!");
 		return;
@@ -122,9 +122,9 @@ Void Engine::ResourcesMenager::CreateStaticDescriptorSet(Uint textures_count_lim
 }
 
 
-Engine::ResourcesMenager::ResourcesMenager(VulkanDevice* device_, Uint datablocks_count_limit_, Uint textures_count_limit_) : p_DeviceContext(device_)
+Engine::ResourcesMenager::ResourcesMenager(CVulkanDevice* device_, Uint datablocks_count_limit_, Uint textures_count_limit_) : p_Device(device_)
 {
-	materials_buffer		= new CStorgeBuffer<GpuDataBlockStruct>(p_DeviceContext, datablocks_count_limit_, nullptr, nullptr);
+	materials_buffer	= new CStorgeBuffer<GpuPropertiesBlockStruct>(p_Device, datablocks_count_limit_, nullptr, nullptr);
 	materials_allocator	= new CBlocksAllocator(datablocks_count_limit_);
 
 	textures_allocator		= new CBlocksAllocator(textures_count_limit_);
@@ -138,13 +138,13 @@ Void Engine::ResourcesMenager::UploadMaterialsPacket(std::vector<CMaterial*> pac
 {
 	Uint loc = materials_allocator->Allocate(packet_.size());
 				
-	CIntermidiateBuffer* upload_buffer = new CIntermidiateBuffer(p_DeviceContext, materials_buffer->GetElementAligmentize() * packet_.size(), CIntermidiateBuffer::Usage::Upload);//Create upload buffer for uploading the material pack
+	CIntermidiateBuffer* upload_buffer = new CIntermidiateBuffer(p_Device, materials_buffer->GetElementAligmentize() * packet_.size(), CIntermidiateBuffer::Usage::Upload);//Create upload buffer for uploading the material pack
 	Byte* data_map = reinterpret_cast<Byte*>(upload_buffer->Map());
 
 	for (Uint i = 0; i < packet_.size() ; i++)
 	{
 		Byte* entry = data_map + materials_buffer->GetElementAligmentize() * i;
-		memcpy(entry, &(packet_.at(i)->Data<GpuDataBlockStruct>()), sizeof(GpuDataBlockStruct));
+		memcpy(entry, &(packet_.at(i)->Data<GpuPropertiesBlockStruct>()), sizeof(GpuPropertiesBlockStruct));
 					
 		materials_locations_map.insert(std::pair<CMaterial*, Uint>(packet_.at(i), loc + i));
 	}
@@ -213,7 +213,7 @@ Void Engine::ResourcesMenager::AddTexturesPacket(std::vector<CTextureBase*> text
 		textures_locations_map.insert(std::pair<CTextureBase*, Uint>(textures_[i], loc + i));
 	}
 
-	vkUpdateDescriptorSets(p_DeviceContext->device, descriptors_counter, descriptors_writes, 0, nullptr);
+	vkUpdateDescriptorSets(p_Device->device, descriptors_counter, descriptors_writes, 0, nullptr);
 	
 	delete[] images_info;
 	delete[] descriptors_writes;

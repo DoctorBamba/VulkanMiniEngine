@@ -20,9 +20,11 @@ class CPlanetOcean: public CObject
 		};
 
 		std::vector<CPbrMaterial*> materials_packet;
+
+		CPersCamera* reflection_camera;
 	public:
 		CPlanetOcean();
 
 		Void Init(CGpuUploadTask* upload_task_) override;
-		Void Render(CGpuDrawTask* draw_task_, Uint layer_) override;
+		Void Draw(CGpuDrawTask* draw_task_, CCamera* camera) override;
 };

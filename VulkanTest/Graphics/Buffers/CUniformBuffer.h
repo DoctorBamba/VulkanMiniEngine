@@ -1,6 +1,6 @@
 #pragma once
 #include "CBuffer.h"
-#include "../CMemoryManager.h"
+#include "../CMemorySpace.h"
 
 template<class T>
 class CUniformBuffer : public CBoundedBuffer
@@ -34,11 +34,11 @@ class CUniformBuffer : public CBoundedBuffer
 			descriptor_write.pImageInfo			= nullptr;
 			descriptor_write.pTexelBufferView	= nullptr;
 
-			vkUpdateDescriptorSets(p_DeviceContext->device, 1, &descriptor_write, 0, nullptr);
+			vkUpdateDescriptorSets(p_Device->device, 1, &descriptor_write, 0, nullptr);
 		}
 };
 
-static Uint ComputeDynamicUniformAligment(VulkanDevice* device_, Uint size_)
+static Uint ComputeDynamicUniformAligment(CVulkanDevice* device_, Uint size_)
 {
 	Uint min_ubo_aligment = device_->properties.limits.minUniformBufferOffsetAlignment;
 	return (min_ubo_aligment > 0) ? (size_ + min_ubo_aligment - 1) & ~(min_ubo_aligment - 1) : size_;
@@ -80,7 +80,7 @@ class CDynamicUniformBuffer : public CBoundedBuffer
 			descriptor_write.pImageInfo			= nullptr;
 			descriptor_write.pTexelBufferView	= nullptr;
 
-			vkUpdateDescriptorSets(p_DeviceContext->device, 1, &descriptor_write, 0, nullptr);
+			vkUpdateDescriptorSets(p_Device->device, 1, &descriptor_write, 0, nullptr);
 		}
 
 		Uint GetAligmentSize() { return aligment_size; }

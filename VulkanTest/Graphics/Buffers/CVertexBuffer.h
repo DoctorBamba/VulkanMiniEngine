@@ -5,7 +5,7 @@ template<class VertexType>
 class CVertexBuffer : public CLocalBuffer
 {
 	public:
-		CVertexBuffer(VulkanDevice* device_, Uint vertices_count_,
+		CVertexBuffer(CVulkanDevice* device_, Uint vertices_count_,
 					   CGpuUploadTask* upload_task_ = nullptr, Pointer initional_data_ = nullptr)
 						: CLocalBuffer(device_, sizeof(VertexType) * vertices_count_, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, upload_task_, initional_data_){}
 
@@ -23,7 +23,7 @@ typedef IndexType* IndicesStream;
 class CIndexBuffer : public CLocalBuffer
 {
 	public:
-		CIndexBuffer(VulkanDevice* device_, Uint indices_count_,
+		CIndexBuffer(CVulkanDevice* device_, Uint indices_count_,
 						CGpuUploadTask* upload_task_ = nullptr, IndicesStream initional_data_ = nullptr)
 							: CLocalBuffer(device_, sizeof(IndexType) * indices_count_, VK_BUFFER_USAGE_INDEX_BUFFER_BIT, upload_task_, initional_data_){}
 

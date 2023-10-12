@@ -58,7 +58,7 @@ Void CObject::AddChild(CObject* new_child_)
 	new_child_->number		= children.size() - 1;
 }
 
-Matrix4D	CObject::GetTransform()
+Matrix4D CObject::GetTransform()
 {
 	Matrix4D transform = Matrix4D(1);
 

@@ -3,8 +3,6 @@
 
 #define	ALLOCATION_FAIELD UINT32_MAX
 
-Uint FindSupportedMemoryType(VkPhysicalDevice physical_device_, Uint memory_type_flag_, Uint addition_type_requirments_);
-
 enum MemoryRigionSize
 {
 	__16MB  = (1 << 24),
@@ -15,6 +13,8 @@ enum MemoryRigionSize
 	__512MB = (1 << 29)
 };
 
+
+class CVulkanDevice;
 
 class CBoundedBuffer;
 class CTextureBase;
@@ -28,7 +28,7 @@ class CMemorySpace
 	{
 		public:
 			VkDeviceMemory			memory;
-			Pointer				mapped_memory;
+			Pointer					mapped_memory;
 
 			const ContinuityRigion* previous;
 			ContinuityRigion*		next;
@@ -60,64 +60,22 @@ class CMemorySpace
 	private:
 		ContinuityRigion* p_FirstContinuity;
 
-		const Uint			m_MemoryTypeIndex;
+		const Uint				m_MemoryTypeIndex;
 		const MemoryRigionSize	m_RigionSize;
 
 		Bool m_IsMapped;
 
-		VulkanDevice* const p_DeviceContext;
+		CVulkanDevice* const p_Device;
 
 	public:
-		CMemorySpace(VulkanDevice* device_, VkMemoryPropertyFlags memory_properties_, MemoryRigionSize rigion_size_)
-			: p_DeviceContext(device_)
-			, m_MemoryTypeIndex(FindSupportedMemoryType(device_->physical_device, 0xffffffff, memory_properties_))
-			, m_RigionSize(rigion_size_)
-		{
-			m_IsMapped = false;
-			p_FirstContinuity = new ContinuityRigion(device_->device, m_RigionSize, m_MemoryTypeIndex, nullptr);
-		}
+		CMemorySpace(CVulkanDevice* device_, VkMemoryPropertyFlags memory_properties_, MemoryRigionSize rigion_size_);
 
 		//The function return the binding offset and the memory
 		BindingLocation BindBuffer(CBoundedBuffer* buffer_);
 		BindingLocation BindTexture(CTextureBase* texture_);
 
+		Void Map();
+		Void Unmap();
 
-		Void Map()
-		{
-			if (m_IsMapped)
-			{
-				throw std::runtime_error("CMemorySpace :: Map -> This memory space is allready mapped!");
-				return;
-			}
-
-			ContinuityRigion* rigion = p_FirstContinuity;
-			while (rigion != nullptr)
-			{
-				vkMapMemory(p_DeviceContext->device, rigion->memory, 0, rigion->GetSize(), 0, &rigion->mapped_memory);
-				rigion = rigion->next;
-			}
-
-			m_IsMapped = true;
-		}
-
-		Void Unmap()
-		{
-			if (!m_IsMapped)
-			{
-				throw std::runtime_error("CMemorySpace :: Unmap -> Try to unmaping an unmaped memory!");
-				return;
-			}
-
-			ContinuityRigion* rigion = p_FirstContinuity;
-			while (rigion != nullptr)
-			{
-				vkUnmapMemory(p_DeviceContext->device, rigion->memory);
-				rigion->mapped_memory = nullptr;
-				rigion = rigion->next;
-			}
-
-			m_IsMapped = false;
-		}
-
-		VulkanDevice* GetDevice() { return p_DeviceContext; }
+		CVulkanDevice* GetDevice() { return p_Device; }
 };

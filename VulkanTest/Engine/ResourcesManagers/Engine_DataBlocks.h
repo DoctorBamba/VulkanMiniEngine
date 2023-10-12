@@ -6,7 +6,7 @@ namespace Engine
 {
 	struct CDataBlockBae
 	{
-		virtual GpuDataBlockStruct BuildGpuStruct() { return {}; }
+		virtual GpuPropertiesBlockStruct BuildGpuStruct() { return {}; }
 		Pointer GetDataPointer() { return (Byte*)this + sizeof(Uint); }
 	};
 }

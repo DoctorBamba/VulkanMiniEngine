@@ -3,7 +3,7 @@
 
 /*Blend States...*/
 
-#define MAXIMUN_ATTACHMENT_PER_RENDERPASS 8
+#define MAXIMUM_ATTACHMENTS_PER_RENDERPASS 8
 
 static VkPipelineColorBlendAttachmentState VulkanUsefuls_ColorBlendAttachmentState_Writeover =
 {

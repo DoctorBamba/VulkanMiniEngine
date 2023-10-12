@@ -3,6 +3,7 @@
 #include "Graphics/Buffers/CVertexBuffer.h"
 #include "Scene/CScene.h"
 #include "Scene/Planet/CPlanet.h"
+#include "EUI/UiWidgetRenderer.h"
 
 CApplication* Application;
 
@@ -43,7 +44,7 @@ class ControledCamera : public CPersCamera
 			direction = Vector3D(-200.0f, 0.0f, 0.0f);
 		}
 		
-		Void Update()
+		Void Update() override
 		{
 			CWindow* root_window = Application->GetRootWindow();
 
@@ -104,8 +105,12 @@ CSpotLight* spot_light;
 
 CPlanet* planet;
 
+UiWidgetRenderer* UiRenderer;
+
 Void Engine::Init_Event(CGpuUploadTask* upload_task_)
 {
+	//UiRenderer = new UiWidgetRenderer();
+
 	Scene = new CScene(L"Example/scene.fbx", graphics);
 	
 	doric = dynamic_cast<CArmature*>(SearchObjectForward("Doric", Scene->root_object));
@@ -114,8 +119,10 @@ Void Engine::Init_Event(CGpuUploadTask* upload_task_)
 	Camera->SetUp(Vector3D(0.0f, 0.0f, 1.0f));
 	Camera->SetZlimits(1.0f, 1000.0f);
 	Camera->SetSolidAngles(1.2f, 1.2f);
+	Scene->AddCamera(Camera, 0.0f);
 	Scene->root_object->AddChild(Camera);
 	
+
 	planet = new CPlanet();
 	Scene->root_object->AddChild(planet);
 
@@ -134,21 +141,21 @@ Void Engine::Init_Event(CGpuUploadTask* upload_task_)
 
 Float teta = 0.0f;
 
-Void Engine::Draw_Event(CGpuDrawTask* draw_task_, CFrameBuffer* target_, Uint frame_index_)
+Void Engine::Draw_Event(CGpuDrawTask* draw_task_, CFrameBuffer* target_)
 {
 	Scene->CallObjectsUpdateEvent();
 
+	Camera->SetFrameBuffer(target_);
 	Camera->SetTime(teta);
 
 	CAnimation* animation = Scene->GetAnimation("Doric|Box");
-	doric->ActiveAnimation(animation, teta, LINEAR_INTERPOLATION_FUNC);
+	doric->ApplyAnimation(animation, teta, LINEAR_INTERPOLATION_FUNC);
 
 	//Camera->SetOffsetTransform(PE_Translate(PE_Vector3D(cos(teta) * 4.3f, sin(teta) * 4.3f, 4.5f)));
+	
 
-	renderer->UpdateLookBuffer(Camera, 0, frame_index_);
-	renderer->UpdateSceneBuffers(Scene, frame_index_);
+	renderer->Draw(draw_task_, Scene);
 
-	renderer->Render(draw_task_, target_, Scene);
 
 	teta += 0.0001f;
 }

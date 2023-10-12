@@ -8,6 +8,7 @@
 #include <set>
 #include <list>
 #include <map>
+#include <unordered_map>
 #include <string>
 #include <array>
 
@@ -24,14 +25,16 @@
 
 #pragma warning(disable : 26812)
 
+
+#include "ft2build.h"
+#include "freetype/freetype.h"
+
+#pragma comment(lib, "freetyped.lib")
+
 #include "LinearMath/PE_LinearMath.h"
 #include "Directory.h"
+#include "StringUtils.h"
+
+#define VULKAN_SDK_PATH L"C:/VulkanSDK/1.2.198.1"
 
 #define array_size(a) (sizeof(a) / sizeof(*a))
-
-struct VulkanDevice
-{
-	VkDevice					device;
-	VkPhysicalDevice			physical_device;
-	VkPhysicalDeviceProperties	properties;
-};

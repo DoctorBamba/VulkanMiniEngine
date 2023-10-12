@@ -119,14 +119,14 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>false</ConformanceMode>
-      <AdditionalIncludeDirectories>C:\VulkanSDK\1.2.198.1\Include;C:\projects\VulkanTest\VulkanTest\Libraries\glfw\include;C:\projects\VulkanTest\VulkanTest\Libraries\FreeImage\include\x64;C:\projects\VulkanTest\VulkanTest\Libraries\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\projects\VulkanTest\VulkanTest\Libraries\FreeType\include;C:\VulkanSDK\1.2.198.1\Include;C:\projects\VulkanTest\VulkanTest\Libraries\glfw\include;C:\projects\VulkanTest\VulkanTest\Libraries\FreeImage\include\x64;C:\projects\VulkanTest\VulkanTest\Libraries\assimp\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
-      <AdditionalLibraryDirectories>C:\VulkanSDK\1.2.198.1\Lib;C:\projects\VulkanTest\VulkanTest\Libraries\glfw\lib;C:\projects\VulkanTest\VulkanTest\Libraries\assimp\lib\x64;C:\projects\VulkanTest\VulkanTest\Libraries\FreeImage\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\projects\VulkanTest\VulkanTest\Libraries\FreeType\lib;C:\VulkanSDK\1.2.198.1\Lib;C:\projects\VulkanTest\VulkanTest\Libraries\glfw\lib;C:\projects\VulkanTest\VulkanTest\Libraries\assimp\lib\x64;C:\projects\VulkanTest\VulkanTest\Libraries\FreeImage\lib\x64;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -162,6 +162,10 @@
     <ClInclude Include="Engine\ResourcesManagers\Engine_GameObjectsManager.h" />
     <ClInclude Include="Engine\ResourcesManagers\Engine_ResourcesManager.h" />
     <ClInclude Include="Engine\SimpleComplie.h" />
+    <ClInclude Include="EUI\UiFonts.h" />
+    <ClInclude Include="EUI\UiGraphics.h" />
+    <ClInclude Include="EUI\UiWidget.h" />
+    <ClInclude Include="EUI\UiWidgetRenderer.h" />
     <ClInclude Include="Graphics\Buffers\CBuffer.h" />
     <ClInclude Include="Graphics\Buffers\CIntermidiate.h" />
     <ClInclude Include="Graphics\Buffers\CLocalBuffer.h" />
@@ -170,15 +174,20 @@
     <ClInclude Include="Graphics\Buffers\CVertexBuffer.h" />
     <ClInclude Include="Graphics\CAllocator.h" />
     <ClInclude Include="Graphics\CDescriptorPool.h" />
+    <ClInclude Include="Graphics\CDevice.h" />
     <ClInclude Include="Graphics\CGpuTask.h" />
-    <ClInclude Include="Graphics\CMemoryManager.h" />
-    <ClInclude Include="Graphics\CPipeline.h" />
+    <ClInclude Include="Graphics\CMemorySpace.h" />
     <ClInclude Include="Graphics\CFrameBuffer.h" />
+    <ClInclude Include="Graphics\ComputePipeline.h" />
+    <ClInclude Include="Graphics\CPipeline.h" />
     <ClInclude Include="Graphics\CRenderPass.h" />
     <ClInclude Include="Graphics\CTexture2D.h" />
+    <ClInclude Include="Graphics\CTexture2DArray.h" />
     <ClInclude Include="Graphics\CTextureBase.h" />
     <ClInclude Include="Graphics\CTextureCube.h" />
     <ClInclude Include="Graphics\FormatsMap.h" />
+    <ClInclude Include="Physics\Collider.h" />
+    <ClInclude Include="Physics\PhysicsPipeline.h" />
     <ClInclude Include="Scene\CAnimation.h" />
     <ClInclude Include="Scene\CArmature.h" />
     <ClInclude Include="Scene\CCamera.h" />
@@ -192,6 +201,7 @@
     <ClInclude Include="Scene\Planet\CPlanet.h" />
     <ClInclude Include="Scene\Planet\CPlanetSurface.h" />
     <ClInclude Include="Scene\Planet\CSun.h" />
+    <ClInclude Include="StringUtils.h" />
     <ClInclude Include="VulkanExtentions.h" />
     <ClInclude Include="Workspace.h" />
   </ItemGroup>
@@ -210,14 +220,21 @@
     <ClCompile Include="Engine\ResourcesManagers\Engine_GameObjectsManager.cpp" />
     <ClCompile Include="Engine\ResourcesManagers\Engine_ResourceManager.cpp" />
     <ClCompile Include="Engine\SimpleCompile.cpp" />
+    <ClCompile Include="EUI\UiFonts.cpp" />
+    <ClCompile Include="EUI\UiGraphics.cpp" />
+    <ClCompile Include="EUI\UiWidget.cpp" />
+    <ClCompile Include="EUI\UiWidgetRenderer.cpp" />
     <ClCompile Include="Graphics\CGpuTask.cpp" />
     <ClCompile Include="Graphics\CMemoryManager.cpp" />
+    <ClCompile Include="Graphics\ComputePipeline.cpp" />
     <ClCompile Include="Graphics\CPipeline.cpp" />
     <ClCompile Include="Graphics\CFrameBuffer.cpp" />
     <ClCompile Include="Graphics\CRenderPass.cpp" />
     <ClCompile Include="Graphics\CTexture2D.cpp" />
+    <ClCompile Include="Graphics\CTexture2DArray.cpp" />
     <ClCompile Include="Graphics\CTextureBase.cpp" />
     <ClCompile Include="Graphics\CTextureCube.cpp" />
+    <ClCompile Include="Physics\PhysicsPipeline.cpp" />
     <ClCompile Include="Scene\CArmature.cpp" />
     <ClCompile Include="Scene\CLight.cpp" />
     <ClCompile Include="Scene\CGameObject.cpp" />
@@ -229,6 +246,7 @@
     <ClCompile Include="Scene\Planet\CPlanetOcean.cpp" />
     <ClCompile Include="Scene\Planet\CPlanetSurface.cpp" />
     <ClCompile Include="Source.cpp" />
+    <ClCompile Include="StringUtils.cpp" />
     <ClCompile Include="VulkanExtentions.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -254,6 +272,8 @@
     <None Include="Engine\Shaders\Planet\Surface.vert" />
     <None Include="Engine\Shaders\RayTracing\RayGenerator.glsl" />
     <None Include="Engine\Shaders\Textures.glsl" />
+    <None Include="EUI\Shaders\widget.vert" />
+    <None Include="Physics\ComputeShaders\CollisionDetection.comp" />
     <None Include="PixelShader.frag" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -10,6 +10,11 @@ Uint Engine::ObjectsManager::NewObjectIdentefier()
 	return gameobjects_allocator->AllocateElement();
 }
 
+Uint Engine::ObjectsManager::NewCameraIdentefier()
+{
+	return cameras_allocator->AllocateElement();
+}
+
 Uint Engine::ObjectsManager::NewLightIdentefier()
 {
 	return lights_allocator->AllocateElement();

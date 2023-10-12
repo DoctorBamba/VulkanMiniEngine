@@ -1,7 +1,7 @@
 #include "CFrameBuffer.h"
 
 CFrameBuffer::CFrameBuffer(VkDevice device_, std::vector<CTextureBase*> color_targets_, CTextureBase* depth_target_, const CRenderPass* render_pass_)
-	: p_DeviceContext(device_), p_RenderPass(render_pass_)
+	: p_Device(device_), p_RenderPass(render_pass_)
 {
 	this->m_ColorTargetsTextures	= color_targets_;
 	this->p_DepthTargetTexture		= depth_target_;
@@ -94,7 +94,7 @@ Void CFrameBuffer::CreateFrameBuffer()
 	frame_buffer_desc.height			= m_Height;
 	frame_buffer_desc.layers			= p_RenderPass->GetLayersCount();
 
-	if (vkCreateFramebuffer(p_DeviceContext, &frame_buffer_desc, nullptr, &p_FrameBuffer) != VK_SUCCESS)
+	if (vkCreateFramebuffer(p_Device, &frame_buffer_desc, nullptr, &p_FrameBuffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("CRenderPass::CreateFrameBuffer -> Failed to create framebuffer!");
 		return;
@@ -190,7 +190,7 @@ Void CFrameBuffer::BindSurfaces(VkDescriptorSet descriptor_set_, Uint binding_, 
 		descriptor_write.pTexelBufferView	= nullptr;
 	}
 
-	vkUpdateDescriptorSets(p_DeviceContext, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
+	vkUpdateDescriptorSets(p_Device, descriptor_writes.size(), descriptor_writes.data(), 0, nullptr);
 }
 
 Void CFrameBuffer::Barrier(VkCommandBuffer command_buffer_, BarrierState new_state_, Bool depth_translation_, Bool color_translation_)
@@ -235,6 +235,12 @@ Void CFrameBuffer::Barrier(VkCommandBuffer command_buffer_, BarrierState new_sta
 			color_src_stage	= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
 			color_dst_stage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
+		else if(new_state_ == BarrierState::OUTPUT)
+		{
+			color_layout	= VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+			color_src_stage	= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+			color_dst_stage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		}
 
 		Uint counter = 0;
 		for (Uint i = 0; i < m_ColorTargetsTextures.size(); i++)
@@ -249,9 +255,28 @@ Void CFrameBuffer::Barrier(VkCommandBuffer command_buffer_, BarrierState new_sta
 	}
 }
 
+Bool CFrameBuffer::IsBoundable()
+{
+	if (p_DepthTargetTexture != nullptr && !p_DepthTargetTexture->IsBoundable())
+		return false;
+
+	for (Uint i = 0; i < m_ColorTargetsTextures.size(); i++)
+	{
+		if (!m_ColorTargetsTextures.at(i)->IsBoundable())
+			return false;
+	}
+
+	return true;
+}
+
+Bool CFrameBuffer::IsOutput()
+{
+	return (m_ColorTargetsTextures.size() == 1 && m_ColorTargetsTextures.at(0)->IsBaseOnBuffer());
+}
+
 
 CFrameBuffer::~CFrameBuffer()
 {
 	if(p_FrameBuffer != nullptr)
-		vkDestroyFramebuffer(p_DeviceContext, p_FrameBuffer, nullptr);
+		vkDestroyFramebuffer(p_Device, p_FrameBuffer, nullptr);
 }

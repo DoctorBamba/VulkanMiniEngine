@@ -4,10 +4,9 @@
 #include "Graphics/CGpuTask.h"
 #include "Graphics/Buffers/CBuffer.h"
 #include "Graphics/Buffers/CUniformBuffer.h"
-#include "Graphics/CMemoryManager.h"
 #include "Graphics/CDescriptorPool.h"
 
-#define NOT_AVAILABLE 0xffffffff
+
 #define MAXIMUM_UNIFORM_BUFFERS_PER_FRAME 1000000
 
 //A list of layers name to use for debug/trace vulkan
@@ -54,21 +53,14 @@ class CGraphics
 {
 	public:
 		VkInstance		 p_Instance;
-		VulkanDevice*	 p_Device;
+		CVulkanDevice*	 p_Device;
 		VkQueue			 p_GraphicsQueue;
 		VkQueue			 p_PresentQueue;
 		VkCommandPool	 p_CommandPool;
 
-		struct DeviceMemory
-		{
-			CMemorySpace* uniform_space;
-			CMemorySpace* local_space;
-		}m_DeviceMemory;
-
 		Uint m_MainQueueFamilyIndex;
 		Uint m_FramesCount = 3;
 
-		std::vector<VkDescriptorPool> m_DescriptorPools;
 
 	public:
 		CGraphics();
@@ -77,9 +69,7 @@ class CGraphics
 		Void CreateInstance();
 		Void PickPhysicalDevice();
 		Void CreateDevice();
-		Void AllocateMemory();
 		Void CreateCommandPool();
-		Void CreateDescriptorPool();
 
 		//Support Chacking...
 		Bool ChackDeviceRequirements(VkPhysicalDevice physical_device_);//Chack if an goven device meets all Engine/Application requirements
@@ -92,6 +82,3 @@ class CGraphics
 
 		VkDevice GetVkDevice() { return p_Device->device; }
 };
-
-
-Uint FindGraphicsFamily(VkPhysicalDevice physical_device_, VkQueueFlagBits queue_types_);

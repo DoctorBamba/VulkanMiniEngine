@@ -17,7 +17,7 @@ class CIntermidiateBuffer : public CIndependentBuffer
 		Pointer m_MappeData;
 
 	public:
-		CIntermidiateBuffer(VulkanDevice* device_, Uint allocate_size_, Usage usage_)
+		CIntermidiateBuffer(CVulkanDevice* device_, Uint allocate_size_, Usage usage_)
 			: CIndependentBuffer(device_, 
 					  allocate_size_, 
 					  (usage_ == Usage::Upload) ? VK_BUFFER_USAGE_TRANSFER_SRC_BIT : VK_BUFFER_USAGE_TRANSFER_DST_BIT, 
@@ -37,7 +37,7 @@ class CIntermidiateBuffer : public CIndependentBuffer
 				return m_MappeData;
 			}
 			
-			vkMapMemory(p_DeviceContext->device, p_DeviceMemory, 0, m_Size, 0, &m_MappeData);
+			vkMapMemory(p_Device->device, p_DeviceMemory, 0, m_Size, 0, &m_MappeData);
 
 			return m_MappeData;
 		}
@@ -46,7 +46,7 @@ class CIntermidiateBuffer : public CIndependentBuffer
 		{
 			if (m_MappeData != nullptr)
 			{
-				vkUnmapMemory(p_DeviceContext->device, p_DeviceMemory);
+				vkUnmapMemory(p_Device->device, p_DeviceMemory);
 				m_MappeData = nullptr;
 			}
 		}

@@ -1,5 +1,5 @@
 #pragma once
-#include "../CMemoryManager.h"
+#include "../CDevice.h"
 
 class CBufferBase
 {
@@ -9,16 +9,16 @@ class CBufferBase
 		Uint					m_Size;
 		Uint					m_RequiredSize;
 
-		VulkanDevice* const p_DeviceContext;
+		CVulkanDevice* const p_Device;
 
 	protected:
-		CBufferBase(VulkanDevice* device_) : p_DeviceContext(device_) {}
+		CBufferBase(CVulkanDevice* device_) : p_Device(device_) {}
 
 	public:
 		Bool SupportMemoryType(Uint memory_type_)
 		{
 			VkMemoryRequirements memory_requirements;
-			vkGetBufferMemoryRequirements(p_DeviceContext->device, p_Buffer, &memory_requirements);
+			vkGetBufferMemoryRequirements(p_Device->device, p_Buffer, &memory_requirements);
 
 			return (Bool)(memory_requirements.memoryTypeBits & memory_type_);
 		}
@@ -26,7 +26,7 @@ class CBufferBase
 		virtual ~CBufferBase()
 		{
 			if (p_Buffer != VK_NULL_HANDLE)
-				vkDestroyBuffer(p_DeviceContext->device, p_Buffer, nullptr);
+				vkDestroyBuffer(p_Device->device, p_Buffer, nullptr);
 		}
 
 		Uint GetSize() { return m_Size; }
@@ -41,7 +41,7 @@ class CIndependentBuffer : public CBufferBase
 		VkDeviceMemory p_DeviceMemory;
 
 	public:
-		CIndependentBuffer(VulkanDevice* device_,  Uint allocate_size_, Uint usage_flag_,
+		CIndependentBuffer(CVulkanDevice* device_,  Uint allocate_size_, Uint usage_flag_,
 							VkMemoryPropertyFlags memory_requirments_ = 0, Bool shared_ = false)
 								: CBufferBase(device_)
 		{
@@ -54,7 +54,7 @@ class CIndependentBuffer : public CBufferBase
 			bufferInfo.usage		= usage_flag_;
 			bufferInfo.sharingMode	= shared_ ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
 			
-			if (vkCreateBuffer(p_DeviceContext->device, &bufferInfo, nullptr, &p_Buffer) != VK_SUCCESS)
+			if (vkCreateBuffer(p_Device->device, &bufferInfo, nullptr, &p_Buffer) != VK_SUCCESS)
 			{
 				throw std::runtime_error("CBuffer::CBuffer -> failed to create buffer!");
 				return;
@@ -62,23 +62,23 @@ class CIndependentBuffer : public CBufferBase
 
 			//Allocate memory...
 			VkMemoryRequirements memory_requirements;
-			vkGetBufferMemoryRequirements(p_DeviceContext->device, p_Buffer, &memory_requirements);
+			vkGetBufferMemoryRequirements(p_Device->device, p_Buffer, &memory_requirements);
 
 			m_RequiredSize = memory_requirements.size;
 
 			VkMemoryAllocateInfo allocation_desc{};
 			allocation_desc.sType			= VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
 			allocation_desc.allocationSize	= memory_requirements.size;
-			allocation_desc.memoryTypeIndex	= FindSupportedMemoryType(p_DeviceContext->physical_device, memory_requirements.memoryTypeBits, memory_requirments_);
+			allocation_desc.memoryTypeIndex	= p_Device->FindSupportedMemoryType(memory_requirements.memoryTypeBits, memory_requirments_);
 			
-			if (vkAllocateMemory(p_DeviceContext->device, &allocation_desc, nullptr, &p_DeviceMemory) != VK_SUCCESS)
+			if (vkAllocateMemory(p_Device->device, &allocation_desc, nullptr, &p_DeviceMemory) != VK_SUCCESS)
 			{
 				throw std::runtime_error("CBuffer::CBuffer -> Buffer Allocation failed!");
 				return;
 			}
 
 			//Bind buffer memory...
-			if (vkBindBufferMemory(p_DeviceContext->device, p_Buffer, p_DeviceMemory, 0) != VK_SUCCESS)
+			if (vkBindBufferMemory(p_Device->device, p_Buffer, p_DeviceMemory, 0) != VK_SUCCESS)
 			{
 				throw std::runtime_error("CBuffer::CBuffer -> Failed to bind buffer memory!");
 				return;
@@ -88,7 +88,7 @@ class CIndependentBuffer : public CBufferBase
 		virtual ~CIndependentBuffer()
 		{
 			if (p_DeviceMemory)
-				vkFreeMemory(p_DeviceContext->device, p_DeviceMemory, nullptr);
+				vkFreeMemory(p_Device->device, p_DeviceMemory, nullptr);
 		}
 
 };
@@ -113,14 +113,14 @@ class CBoundedBuffer : public CBufferBase
 			bufferInfo.usage		= usage_flag_;
 			bufferInfo.sharingMode	= shared_ ? VK_SHARING_MODE_CONCURRENT : VK_SHARING_MODE_EXCLUSIVE;
 			
-			if (vkCreateBuffer(p_DeviceContext->device, &bufferInfo, nullptr, &p_Buffer) != VK_SUCCESS)
+			if (vkCreateBuffer(p_Device->device, &bufferInfo, nullptr, &p_Buffer) != VK_SUCCESS)
 			{
 				throw std::runtime_error("CBuffer::CBuffer -> failed to create buffer!");
 				return;
 			}
 
 			VkMemoryRequirements memory_requirements;
-			vkGetBufferMemoryRequirements(p_DeviceContext->device, p_Buffer, &memory_requirements);
+			vkGetBufferMemoryRequirements(p_Device->device, p_Buffer, &memory_requirements);
 
 			m_RequiredSize = memory_requirements.size;
 			

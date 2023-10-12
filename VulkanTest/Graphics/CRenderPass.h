@@ -3,9 +3,9 @@
 #include "../Workspace.h"
 #include "FormatsMap.h"
 
-#define RENDER_PASS_MAXIMUM_ATTACHMENTS 8
+#define MAXIMUM_ATTACHMENTS_PER_RENDERPASS 8
 
-typedef std::array<VkFormat, RENDER_PASS_MAXIMUM_ATTACHMENTS> VkAttachmentsFormats;
+typedef std::vector<VkFormat> VkAttachmentsFormats;
 
 enum class RenderPassType
 {
@@ -24,7 +24,7 @@ class CRenderPass
 		VkAttachmentsFormats	m_ColorAttachmentsFormat;
 		VkFormat				m_DepthAttachmentFormat;
 
-		VkDevice p_DeviceContext;
+		VkDevice p_Device;
 
 		const RenderPassType m_TargetType;
 
@@ -34,6 +34,7 @@ class CRenderPass
 
 		~CRenderPass();
 
+		Uint GetColorAttachmentsCount() const { return m_ColorAttachmentsFormat.size(); }
 		VkFormat GetColorAttachmentsFormat(Uint index_) const { return m_ColorAttachmentsFormat[index_]; }
 		VkFormat GetDepthAttachmentFormat() const { return m_DepthAttachmentFormat; }
 		VkRenderPass GetVkRenderPass() const { return p_RenderPass; }

@@ -58,20 +58,20 @@ CScene::CScene(WString directory_, CGraphics* graphics_) : directory(directory_)
 }
 
 
-CTexture2D* CreateTextureFromMaterial(const aiMaterial* ai_material_, String key_, Uint type_, Uint index_, String type_name_, WString folder_directory_, CGpuUploadTask* upload_task_, std::ofstream* log_file_)
+CTexture2D* LoadMaterialTextures(const aiMaterial* ai_material_, String key_, Uint type_, Uint index_, String type_name_, WString folder_directory_, CGpuUploadTask* upload_task_, std::ofstream* log_file_)
 {
 	aiString ai_path;
 
 	if (!ai_material_->Get(key_, type_, index_, ai_path) == AI_SUCCESS)
 	{
-		*log_file_ << std::string("CreateTextureFromMaterial Error -> Failed to read details of ") + type_name_ + " texture.\n";
+		*log_file_ << std::string("LoadMaterialTextures Error -> Failed to read details of ") + type_name_ + " texture.\n";
 		return nullptr;
 	}
 	else
 	{
 		std::string  path  = ai_path.C_Str();
 		std::wstring wpath = folder_directory_ + std::wstring(L"/") + std::wstring(path.begin(), path.end());
-		return new CTexture2D(Engine::graphics->m_DeviceMemory.local_space, wpath, upload_task_);
+		return new CTexture2D(Engine::graphics->p_Device->MemorySpaces.local_space, wpath, upload_task_);
 	}
 
 }
@@ -94,13 +94,13 @@ Void CScene::ConvertPbrMaterials(const aiScene* ai_scene_, WString folder_direct
 		aiString material_name;
 		ai_material->Get(AI_MATKEY_NAME, material_name);
 
-		CTexture2D* base_color_texture  = CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_BASECOLOR, "base_color", folder_directory_, upload_task_, log_file_);
-		CTexture2D* metalic_texture		= CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_METALICE, "metalic", folder_directory_, upload_task_, log_file_);
-		CTexture2D* roughness_texture	= CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_ROUGNESS, "roughness", folder_directory_, upload_task_, log_file_);
-		CTexture2D* specular_texture	= CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_SPECULAR, "emissive", folder_directory_, upload_task_, log_file_);
-		CTexture2D* transmision_texture = CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_TRANSPERANCY_FACTOR, "transperency", folder_directory_, upload_task_, log_file_);
-		CTexture2D* emission_texture	= CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_EMISSION, "emmision", folder_directory_, upload_task_, log_file_);
-		CTexture2D* normals_texture		= CreateTextureFromMaterial(ai_material, AI_MATKEY_CONVERTED_PBR_NORMALS, "normals", folder_directory_, upload_task_, log_file_);
+		CTexture2D* base_color_texture  = LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_BASECOLOR, "base_color", folder_directory_, upload_task_, log_file_);
+		CTexture2D* metalic_texture		= LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_METALICE, "metalic", folder_directory_, upload_task_, log_file_);
+		CTexture2D* roughness_texture	= LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_ROUGNESS, "roughness", folder_directory_, upload_task_, log_file_);
+		CTexture2D* specular_texture	= LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_SPECULAR, "emissive", folder_directory_, upload_task_, log_file_);
+		CTexture2D* transmision_texture = LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_TRANSPERANCY_FACTOR, "transperency", folder_directory_, upload_task_, log_file_);
+		CTexture2D* emission_texture	= LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_EMISSION, "emmision", folder_directory_, upload_task_, log_file_);
+		CTexture2D* normals_texture		= LoadMaterialTextures(ai_material, AI_MATKEY_CONVERTED_PBR_NORMALS, "normals", folder_directory_, upload_task_, log_file_);
 		
 		
 		Engine::resource_manager->AddTexturesPacket({	base_color_texture,
@@ -230,15 +230,15 @@ Void CScene::CallObjectsUpdateEvent()
 	CallObjectsUpdateEventRecursive(root_object);
 }
 
-Void CallObjectsDrawEventRecursive(CObject* object_, CGpuDrawTask* draw_task_, Uint layer_)
+Void CallObjectsDrawEventRecursive(CObject* object_, CGpuDrawTask* draw_task_, CCamera* camera_)
 {
-	object_->Render(draw_task_, layer_);
+	object_->Draw(draw_task_, camera_);
 
 	for (Uint i = 0; i < object_->GetChildrenNumber(); i++)
-		CallObjectsDrawEventRecursive(object_->GetChild(i), draw_task_, layer_);
+		CallObjectsDrawEventRecursive(object_->GetChild(i), draw_task_, camera_);
 }
 
-Void CScene::CallObjectsDrawEvent(CGpuDrawTask* draw_task_, Uint layer_)
+Void CScene::CallObjectsDrawEvent(CGpuDrawTask* draw_task_, CCamera* camera_)
 {
-	CallObjectsDrawEventRecursive(root_object, draw_task_, layer_);
+	CallObjectsDrawEventRecursive(root_object, draw_task_, camera_);
 }

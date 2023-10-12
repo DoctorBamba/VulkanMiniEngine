@@ -22,5 +22,5 @@ class CPlanetSurface : public CObject
 		Void GeneratePlanetMap(CGpuUploadTask* upload_task_);
 
 		Void Init(CGpuUploadTask* upload_task_) override;
-		Void Render(CGpuDrawTask* draw_task_, Uint layer_) override;
+		Void Draw(CGpuDrawTask* draw_task_, CCamera* camera) override;
 };

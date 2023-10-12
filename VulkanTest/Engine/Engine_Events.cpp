@@ -2,12 +2,17 @@
 
 Void Engine::Install()
 {
+
 	graphics			= new CGraphics();
 
 	CreateBasicSamplers(graphics->p_Device);
 
+
+	Renderer::InitialStatics(graphics->p_Device);
+
+
 	resource_manager	= new ResourcesMenager(graphics->p_Device, ENGINE_MAXIMUM_MATERIALS_COUNT, ENGINE_MAXIMUM_TEXTURES_COUNT);
-	objects_manager		= new ObjectsManager(ENGINE_MAXIMUM_GAMEOBJECTS_COUNT, ENGINE_MAXIMUM_LIGHTS_COUNT, ENGINE_MAXIMUM_BONES_COUNT);
+	objects_manager		= new ObjectsManager(ENGINE_MAXIMUM_GAMEOBJECTS_COUNT, ENGINE_MAXIMUM_CAMERAS_COUNT,  ENGINE_MAXIMUM_LIGHTS_COUNT, ENGINE_MAXIMUM_BONES_COUNT);
 	renderer			= new Renderer();
 
 	CGpuUploadTask* upload_task = new CGpuUploadTask(graphics->p_Device, graphics->p_CommandPool);

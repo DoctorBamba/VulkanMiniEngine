@@ -1,5 +1,5 @@
 #pragma once
-#include "../Workspace.h"
+#include "../Graphics/CDevice.h"
 
 namespace Engine
 {
@@ -11,5 +11,5 @@ namespace Engine
 		extern VkSampler high_quality_linear;
 	};
 
-	Void CreateBasicSamplers(VulkanDevice* device_);
+	Void CreateBasicSamplers(CVulkanDevice* device_);
 }

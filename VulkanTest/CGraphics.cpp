@@ -1,14 +1,12 @@
 #include "CGraphics.h"
 
-CGraphics::CGraphics() : p_Device(new VulkanDevice)
+CGraphics::CGraphics() : p_Device(new CVulkanDevice)
 {
     PrintExtentionsList();
     CreateInstance();
     PickPhysicalDevice();
     CreateDevice();
-    AllocateMemory();
     CreateCommandPool();
-    CreateDescriptorPool();
 }
 
 Bool CheckValidationLayerSupport()
@@ -163,49 +161,7 @@ Void CGraphics::PickPhysicalDevice()
 
 
     //Find a Queue family that support Graphics/3D Engine
-    m_MainQueueFamilyIndex = FindGraphicsFamily(p_Device->physical_device, VK_QUEUE_GRAPHICS_BIT);
-}
-
-Uint FindGraphicsFamily(VkPhysicalDevice physical_device_, VkQueueFlagBits queue_types_)
-{
-    //Serche for Physical Queues Families...
-    uint32_t queue_family_count = 0;
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &queue_family_count, nullptr);//Only get the number
-
-    std::vector<VkQueueFamilyProperties> queue_families(queue_family_count);
-    vkGetPhysicalDeviceQueueFamilyProperties(physical_device_, &queue_family_count, queue_families.data());
-
-    Uint family_index = NOT_AVAILABLE;
-
-    for (Uint i = 0; i < queue_family_count; i++)
-    {
-        if (queue_families.at(i).queueFlags & queue_types_)
-        {
-            family_index = i;
-            break;
-        }
-    }
-
-    if (family_index == NOT_AVAILABLE)
-        throw std::runtime_error("Not found a family that support the given Queue-Type");
-
-    return family_index;
-}
-
-Uint FindSupportedMemoryType(VkPhysicalDevice physical_device_, Uint memory_type_flag_, Uint addition_type_requirments_)
-{
-	VkPhysicalDeviceMemoryProperties memory_prop;
-	vkGetPhysicalDeviceMemoryProperties(physical_device_, &memory_prop);
-
-	for (Uint i = 0; i < memory_prop.memoryTypeCount; i++)
-	{
-		Uint bit_mask = (1u << i);
-		if ((memory_type_flag_ & bit_mask) && ((memory_prop.memoryTypes[i].propertyFlags & addition_type_requirments_) == addition_type_requirments_))
-			return i;
-	}
-
-	throw std::runtime_error("FindMemoryTypeIndex -> Not found memory with memory type that support he requirment of this buffer!");
-	return 0;
+    m_MainQueueFamilyIndex = p_Device->FindQueueFamily(VK_QUEUE_GRAPHICS_BIT);
 }
 
 
@@ -306,13 +262,7 @@ Void CGraphics::CreateDevice()
 
     LoadExtentionsFuncPointers(p_Device->device);
 
-}
-
-Void CGraphics::AllocateMemory()
-{
-    m_DeviceMemory.uniform_space    = new CMemorySpace(p_Device, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, __128MB);
-    m_DeviceMemory.local_space      = new CMemorySpace(p_Device, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, __128MB);
-    m_DeviceMemory.uniform_space->Map();//Map uniform memory becuse we need to update this memory repadly
+    p_Device->AllocateMemorySpaces();//Allocate device memoreis
 
 }
 
@@ -329,40 +279,7 @@ Void CGraphics::CreateCommandPool()
 	}
 }
 
-Void CGraphics::CreateDescriptorPool()
-{
-    m_DescriptorPools.resize(m_FramesCount);
 
-    //Create descriptor pool for evrey frame...
-    for (Uint i = 0; i < m_FramesCount; i++)
-    {
-        VkDescriptorPoolSize uniforms_size{};
-        uniforms_size.type                      = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        uniforms_size.descriptorCount           = 256 * m_FramesCount;
-
-        VkDescriptorPoolSize dynamic_uniforms_size{};
-        dynamic_uniforms_size.type             = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC;
-        dynamic_uniforms_size.descriptorCount  = 16 * m_FramesCount;;
-
-        VkDescriptorPoolSize images_size{};
-        images_size.type                        = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
-        images_size.descriptorCount             = 256 * m_FramesCount;
-
-        VkDescriptorPoolSize pool_sizes[] = { uniforms_size, dynamic_uniforms_size, images_size };
-
-        VkDescriptorPoolCreateInfo pool_desc{};
-        pool_desc.sType         = VK_STRUCTURE_TYPE_DESCRIPTOR_POOL_CREATE_INFO;
-        pool_desc.poolSizeCount = array_size(pool_sizes);
-        pool_desc.pPoolSizes    = pool_sizes;
-        pool_desc.maxSets       = MAXIMUM_DESCRIPTOR_SETS_PER_POOL;
-
-        if (vkCreateDescriptorPool(p_Device->device, &pool_desc, nullptr, &m_DescriptorPools.at(i)) != VK_SUCCESS)
-        {
-            throw std::runtime_error("CDescriptorSet::Constructor -> Failed to create the descriptor pool!");
-            return;
-        }
-    }
-}
 
 Void CGraphics::PrintExtentionsList()
 {

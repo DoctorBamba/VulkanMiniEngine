@@ -1,12 +1,12 @@
 #include "CGpuTask.h"
 #include "Buffers/CIntermidiate.h"
 
-CGpuTask::CGpuTask(VulkanDevice* device_, VkCommandPool command_pool_) : p_DeviceContext(device_)
+CGpuTask::CGpuTask(CVulkanDevice* device_, VkCommandPool command_pool_) : p_Device(device_)
 {
 	VkFenceCreateInfo fence_desc{};
 	fence_desc.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
 
-	if (vkCreateFence(p_DeviceContext->device, &fence_desc, nullptr, &p_Fence) != VK_SUCCESS)
+	if (vkCreateFence(p_Device->device, &fence_desc, nullptr, &p_Fence) != VK_SUCCESS)
 	{
 		throw std::runtime_error("CGpuTask::CGpuTask -> Failed to create fence");
 		return;
@@ -18,7 +18,7 @@ CGpuTask::CGpuTask(VulkanDevice* device_, VkCommandPool command_pool_) : p_Devic
 	alloc_info.level				= VK_COMMAND_BUFFER_LEVEL_PRIMARY;
 	alloc_info.commandBufferCount	= 1;
 
-	if (vkAllocateCommandBuffers(p_DeviceContext->device, &alloc_info, &p_CommandBuffer) != VK_SUCCESS)
+	if (vkAllocateCommandBuffers(p_Device->device, &alloc_info, &p_CommandBuffer) != VK_SUCCESS)
 	{
 		throw std::runtime_error("CGpuTask::CGpuTask -> Failed to allocate command buffer!");
 		return;
@@ -30,7 +30,7 @@ CGpuTask::CGpuTask(VulkanDevice* device_, VkCommandPool command_pool_) : p_Devic
 
 CGpuTask::~CGpuTask()
 {
-	vkDestroyFence(p_DeviceContext->device, p_Fence, nullptr);
+	vkDestroyFence(p_Device->device, p_Fence, nullptr);
 }
 
 
@@ -62,7 +62,7 @@ Void CGpuTask::Execute(VkQueue queue_, VkSemaphore wait_semaphore_, VkSemaphore 
 {
 	Close();
 
-	vkResetFences(p_DeviceContext->device, 1, &p_Fence);
+	vkResetFences(p_Device->device, 1, &p_Fence);
 
 	VkPipelineStageFlags wait_stages[] = { VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT };
 
@@ -94,7 +94,7 @@ Void CGpuTask::Execute(VkQueue queue_, VkSemaphore wait_semaphore_, VkSemaphore 
 Void CGpuTask::WaitAntilComplite()
 {
 	if(m_TaskSubmited)
-		vkWaitForFences(p_DeviceContext->device, 1, &p_Fence, true, UINT64_MAX);
+		vkWaitForFences(p_Device->device, 1, &p_Fence, true, UINT64_MAX);
 }
 
 //Upload Task...

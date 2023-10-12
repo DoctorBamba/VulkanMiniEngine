@@ -1,6 +1,6 @@
 #include "CRenderPass.h"
 
-CRenderPass::CRenderPass(VkDevice device_, VkAttachmentsFormats color_formats_, VkFormat depth_format_, RenderPassType type_ ,Bool color_autoclear_, Bool depth_autoclear_) : p_DeviceContext(device_), m_TargetType(type_)
+CRenderPass::CRenderPass(VkDevice device_, VkAttachmentsFormats color_formats_, VkFormat depth_format_, RenderPassType type_ ,Bool color_autoclear_, Bool depth_autoclear_) : p_Device(device_), m_TargetType(type_)
 {
 	//Store attachments formats...
 	m_ColorAttachmentsFormat = color_formats_;
@@ -33,11 +33,8 @@ CRenderPass::CRenderPass(VkDevice device_, VkAttachmentsFormats color_formats_, 
 
 	Uint color_attachments_start_index = all_attachments.size();
 
-	for (Uint i = 0; i < RENDER_PASS_MAXIMUM_ATTACHMENTS; i++)
+	for (Uint i = 0; i < color_formats_.size(); i++)
 	{
-		if (color_formats_[i] == VK_FORMAT_UNDEFINED)
-			continue;
-
 		VkAttachmentDescription color_attachment;
 		color_attachment.flags			= 0;
 		color_attachment.format			= color_formats_[i];
@@ -69,21 +66,45 @@ CRenderPass::CRenderPass(VkDevice device_, VkAttachmentsFormats color_formats_, 
 	render_pass_desc.subpassCount		= 1;
 	render_pass_desc.pSubpasses			= &subpass;
 
-	if (type_ == RenderPassType::Present)
-	{
-		VkSubpassDependency dependency{};
-		dependency.srcSubpass		= VK_SUBPASS_EXTERNAL;
-		dependency.dstSubpass		= 0;
-		dependency.srcStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.srcAccessMask	= 0;
-		dependency.dstStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
-		dependency.dstAccessMask	= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+	VkSubpassDependency dependency[2];
 
+	if (type_ == RenderPassType::Present)//Image layer translation for buffer-base present texture.
+	{
+		dependency[0].srcSubpass		= VK_SUBPASS_EXTERNAL;
+		dependency[0].dstSubpass		= 0;
+		dependency[0].srcStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency[0].srcAccessMask		= 0;
+		dependency[0].dstStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency[0].dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency[0].dependencyFlags	= VK_DEPENDENCY_BY_REGION_BIT;
+		
 		render_pass_desc.dependencyCount = 1;
-		render_pass_desc.pDependencies	 = &dependency;
+		render_pass_desc.pDependencies	 = dependency;
+	}
+	else//Ordinary image-layer-translations for framebuffer's textures that can used as shaders resources.
+	{
+		dependency[0].srcSubpass		= VK_SUBPASS_EXTERNAL;
+		dependency[0].dstSubpass		= 0;
+		dependency[0].srcStageMask		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependency[0].dstStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency[0].srcAccessMask		= VK_ACCESS_SHADER_READ_BIT;
+		dependency[0].dstAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency[0].dependencyFlags	= VK_DEPENDENCY_BY_REGION_BIT;
+
+		dependency[1].srcSubpass		= 0;
+		dependency[1].dstSubpass		= VK_SUBPASS_EXTERNAL;
+		dependency[1].srcStageMask		= VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+		dependency[1].dstStageMask		= VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+		dependency[1].srcAccessMask		= VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+		dependency[1].dstAccessMask		= VK_ACCESS_SHADER_READ_BIT;
+		dependency[1].dependencyFlags	= VK_DEPENDENCY_BY_REGION_BIT;
+
+		render_pass_desc.dependencyCount = 2;
+		render_pass_desc.pDependencies	 = dependency;
 	}
 
-	if (vkCreateRenderPass(p_DeviceContext, &render_pass_desc, nullptr, &p_RenderPass) != VK_SUCCESS)
+
+	if (vkCreateRenderPass(p_Device, &render_pass_desc, nullptr, &p_RenderPass) != VK_SUCCESS)
 	{
 		throw std::runtime_error("CRenderPass::CRenderPass -> Failed to create render pass!");
 		return;
@@ -94,5 +115,5 @@ CRenderPass::CRenderPass(VkDevice device_, VkAttachmentsFormats color_formats_, 
 CRenderPass::~CRenderPass()
 {
 	if (p_RenderPass != nullptr)
-		vkDestroyRenderPass(p_DeviceContext, p_RenderPass, nullptr);
+		vkDestroyRenderPass(p_Device, p_RenderPass, nullptr);
 }

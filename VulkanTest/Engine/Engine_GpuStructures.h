@@ -2,6 +2,8 @@
 
 #include "../Workspace.h"
 
+#define GPU_PROPERTIES_BLOCK_SIZE_IN_BYTE 256
+
 class CPbrMaterial;
 
 namespace Engine
@@ -18,11 +20,6 @@ namespace Engine
 		Float	 unused0;
 		Float	 unused1;
 		Float	 unused2;
-	};
-
-	struct GpuDataBlockStruct
-	{
-		Byte bytes[256];
 	};
 
 	struct GpuPbrMaterialStruct
@@ -109,7 +106,7 @@ namespace Engine
 
 	struct GpuPropertiesBlockStruct
 	{
-		Byte bytes[256];
+		Byte bytes[GPU_PROPERTIES_BLOCK_SIZE_IN_BYTE];
 	};
 
 	//Builders...

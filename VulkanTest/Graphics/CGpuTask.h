@@ -1,6 +1,8 @@
 #pragma once
 #include "../Workspace.h"
 
+class CVulkanDevice;
+
 class CGpuTask
 {
 	protected:
@@ -9,10 +11,10 @@ class CGpuTask
 		Bool			m_InRecording;
 		Bool			m_TaskSubmited;
 
-		VulkanDevice* const	p_DeviceContext;
+		CVulkanDevice* const	p_Device;
 
 	public:
-		CGpuTask(VulkanDevice* device_, VkCommandPool command_pool_);
+		CGpuTask(CVulkanDevice* device_, VkCommandPool command_pool_);
 
 		virtual ~CGpuTask();
 
@@ -25,13 +27,14 @@ class CGpuTask
 
 		Bool InRecording() { return m_InRecording; }
 
-		VulkanDevice* GetDevice() { return p_DeviceContext; }
+		CVulkanDevice* GetDevice() { return p_Device; }
 };
 
 class CLocalBuffer;
 class CIntermidiateBuffer;
 class CTexture2D;
 class CTextureCube;
+class CTexture2DArray;
 
 class CGpuUploadTask : public CGpuTask
 {
@@ -39,6 +42,7 @@ class CGpuUploadTask : public CGpuTask
 	friend CIntermidiateBuffer;
 	friend CTexture2D;
 	friend CTextureCube;
+	friend CTexture2DArray;
 
 	private:
 		std::vector<CIntermidiateBuffer*> m_Intermidiates;//Save a list of intermidaite buffer for remove they after task complite.
@@ -59,7 +63,7 @@ class CGpuDrawTask : public CGpuTask
 		const Uint frame_index;
 
 	public:
-		CGpuDrawTask(VulkanDevice* device_, VkCommandPool command_pool_, Uint frame_index_) :
+		CGpuDrawTask(CVulkanDevice* device_, VkCommandPool command_pool_, Uint frame_index_) :
 			CGpuTask(device_, command_pool_), frame_index(frame_index_) {}
 
 		Uint GetFrameIndex() { return frame_index; }

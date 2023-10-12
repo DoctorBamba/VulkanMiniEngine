@@ -10,5 +10,5 @@ namespace Engine
 	Void Clean();
 
 	Void Init_Event(CGpuUploadTask* upload_task_);
-	Void Draw_Event(CGpuDrawTask* draw_task_, CFrameBuffer* target_, Uint frame_index_);
+	Void Draw_Event(CGpuDrawTask* draw_task_, CFrameBuffer* target_);
 }

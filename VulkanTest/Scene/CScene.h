@@ -8,6 +8,7 @@
 class CScene
 {
 	private:
+		std::multimap<Float, CCamera*>		 cameras;
 		std::map<std::string, CPbrMaterial*> materials;
 		std::map<std::string, CMeshBase*>	 meshs;
 		std::map<std::string, CAnimation*>	 animations;
@@ -58,14 +59,20 @@ class CScene
 		//Call objects events...
 		Void CallObjectsInitEvent(CGpuUploadTask* upload_task_);
 		Void CallObjectsUpdateEvent();
-		Void CallObjectsDrawEvent(CGpuDrawTask* draw_task_, Uint layer_);
+		Void CallObjectsDrawEvent(CGpuDrawTask* draw_task_, CCamera* camera);
 
 
 		Void AddLight(CLight* light_) { lights.push_back(light_); }
+		Void AddCamera(CCamera* camera_, Float camera_preority_) { cameras.insert(std::pair<Float, CCamera*>(camera_preority_, camera_)); }
+
 
 		Uint GetLightsCount() { return lights.size(); }
 		CLight* GetLight(Uint index_) { return lights.at(index_); }
 		std::vector<CLight*> GetAllLights() { return lights; }
+		std::multimap<Float, CCamera*>* GetAllCameras() 
+		{ 
+			return &cameras; 
+		}
 };
 
 

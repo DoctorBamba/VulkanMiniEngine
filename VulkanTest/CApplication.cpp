@@ -2,7 +2,7 @@
 #include "Engine/Engine_Events.h"
 #include "Engine/Engine_WinConnection.h"
 
-
+FT_Library FT_FontLibrary;
 
 CApplication::CApplication()
 {
@@ -13,6 +13,11 @@ CApplication::CApplication()
 		return;
 	}
 
+	if (FT_Init_FreeType(&FT_FontLibrary))
+	{
+		throw std::runtime_error("FreeType Init failed!");
+		return;
+	}
 
 	try
 	{

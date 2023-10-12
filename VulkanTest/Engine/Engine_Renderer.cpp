@@ -5,7 +5,7 @@ namespace Engine
 	Renderer* renderer;
 }
 
-Void Engine::Renderer::CreateShade(std::string name_, StandartPipelineInfo pipeline_info_, Shade::Type shade_type_, Bool present_)
+Void Engine::Renderer::CreateShade(std::string name_, PipelineState pipeline_info_, Shading::Type shade_type_, Bool present_)
 {
 	auto it = shades_ids.find(name_);
 	if (it != shades_ids.end())
@@ -14,9 +14,9 @@ Void Engine::Renderer::CreateShade(std::string name_, StandartPipelineInfo pipel
 		return;
 	}
 
-	pipeline_info_.PipelineLayout = this->layout;
+	pipeline_info_.input.inputLayout = this->layout;
 
-	Shade* shade = new Shade(shade_type_, new CPipeline(graphics->p_Device->device, name_, pipeline_info_, present_), name_);
+	Shading* shade = new Shading(shade_type_, new CPipeline(graphics->p_Device->device, name_, pipeline_info_, present_), name_);
 	shades_ids.insert(std::pair<std::string, Uint>(name_, shades->PushBack(shade)));
 
 }
@@ -39,7 +39,7 @@ Void Engine::Renderer::CreateLayout()
 	VkDescriptorSetLayoutCreateInfo descriptor_set_layout_desc{};
 
 	//Static descriptor set..
-	descriptor_sets_layout.per_resources_manager = Engine::resource_manager->GetDescriptorLayout();
+	descriptor_set_layouts[(Uint)DescriptorSetLayouts::PerResourceManager] = Engine::resource_manager->GetDescriptorLayout();
 
 	//Per frame descriptor set...
 
@@ -84,7 +84,7 @@ Void Engine::Renderer::CreateLayout()
 	descriptor_set_layout_desc.bindingCount = array_size(per_frame_binds);
 	descriptor_set_layout_desc.pBindings	= per_frame_binds;
 
-	if (vkCreateDescriptorSetLayout(Engine::graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_sets_layout.per_frame) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(Engine::graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_set_layouts[DescriptorSetLayouts::PerCamera]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Renderer::CreateLayout -> Failed to create descriptor set layout!");
 		return;
@@ -117,7 +117,7 @@ Void Engine::Renderer::CreateLayout()
 	descriptor_set_layout_desc.bindingCount = array_size(per_object_binds);
 	descriptor_set_layout_desc.pBindings	= per_object_binds;
 
-	if (vkCreateDescriptorSetLayout(Engine::graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_sets_layout.per_object) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(Engine::graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_set_layouts[DescriptorSetLayouts::PerGameObject]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Renderer::CreateLayout -> Failed to create descriptor set layout!");
 		return;
@@ -144,7 +144,7 @@ Void Engine::Renderer::CreateLayout()
 	descriptor_set_layout_desc.bindingCount = array_size(per_light_binds);
 	descriptor_set_layout_desc.pBindings	= per_light_binds;
 
-	if (vkCreateDescriptorSetLayout(graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_sets_layout.per_light) != VK_SUCCESS)
+	if (vkCreateDescriptorSetLayout(graphics->GetVkDevice(), &descriptor_set_layout_desc, nullptr, &descriptor_set_layouts[DescriptorSetLayouts::PerLight]) != VK_SUCCESS)
 	{
 		throw std::runtime_error("Renderer::CreateLayout -> Failed to create descriptor set layout!");
 		return;
@@ -159,13 +159,11 @@ Void Engine::Renderer::CreateLayout()
 
 	//Pipeline Layout...
 
-	VkDescriptorSetLayout sets_layout[] = { descriptor_sets_layout.per_resources_manager, descriptor_sets_layout.per_frame, descriptor_sets_layout.per_object, descriptor_sets_layout.per_light };
-
 	VkPipelineLayout pipe_line_layout;
 	VkPipelineLayoutCreateInfo pipeline_layout_desc{};
 	pipeline_layout_desc.sType						= VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
-	pipeline_layout_desc.setLayoutCount				= array_size(sets_layout);
-	pipeline_layout_desc.pSetLayouts				= sets_layout;
+	pipeline_layout_desc.setLayoutCount				= DescriptorSetLayouts::COUNT;
+	pipeline_layout_desc.pSetLayouts				= descriptor_set_layouts;
 	pipeline_layout_desc.pushConstantRangeCount		= 1;
 	pipeline_layout_desc.pPushConstantRanges		= &push_constat_range;
 
@@ -176,18 +174,29 @@ Void Engine::Renderer::CreateLayout()
 	}
 }
 
+Void Engine::Renderer::InitialStatics(CVulkanDevice* device)
+{
+	//Static Render Pass...
+
+	RenderPass::forward  = new CRenderPass(device->device, { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_D32_SFLOAT, RenderPassType::Texture2D);
+	RenderPass::postproc = new CRenderPass(device->device, { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_UNDEFINED, RenderPassType::Texture2D);
+	RenderPass::output	 = new CRenderPass(device->device, { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_UNDEFINED, RenderPassType::Present);
+
+	RenderPass::deferred = new CRenderPass(graphics->GetVkDevice(),
+												  { VK_FORMAT_R8G8B8A8_UNORM,
+													VK_FORMAT_R32G32_UINT,
+													VK_FORMAT_R32G32_UINT,
+													VK_FORMAT_R8G8B8A8_UNORM},
+													VK_FORMAT_D32_SFLOAT,
+													RenderPassType::Texture2D);
+}
 
 Void Engine::Renderer::CreateBasicGraphicsPipelines()
 {
-	render_pass.forward  = new CRenderPass(graphics->GetVkDevice(), { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_D32_SFLOAT, RenderPassType::Texture2D);
-	render_pass.postproc = new CRenderPass(graphics->GetVkDevice(), { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_UNDEFINED, RenderPassType::Texture2D);
-	render_pass.output	 = new CRenderPass(graphics->GetVkDevice(), { VK_FORMAT_B8G8R8A8_UNORM }, VK_FORMAT_UNDEFINED, RenderPassType::Present);
-
-
 	//Create the "Write-To-GBuffer" Pipeline...
 
 
-	InputAttributes vertex_inputs = { {0, 0, VK_FORMAT_R32G32B32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },			//Position
+	InputAttributes vertex_attributes = { {0, 0, VK_FORMAT_R32G32B32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },			//Position
 									  {0, 1, VK_FORMAT_R32G32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },			//Texcoord
 									  {0, 2, VK_FORMAT_R32G32B32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },			//Normal
 									  {0, 3, VK_FORMAT_R32G32B32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },			//Tangent
@@ -195,44 +204,36 @@ Void Engine::Renderer::CreateBasicGraphicsPipelines()
 									  {0, 5, VK_FORMAT_R32G32B32A32_UINT, VK_VERTEX_INPUT_RATE_VERTEX },		//Bones Ids
 									  {0, 6, VK_FORMAT_R32G32B32A32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX } };	//Bones Wigths
 
-	gbuffer_attachments_count = 4;
-	render_pass.deferred = new CRenderPass(graphics->GetVkDevice(),
-												  { VK_FORMAT_R8G8B8A8_UNORM,
-													VK_FORMAT_R32G32_UINT,
-													VK_FORMAT_R32G32_UINT,
-													VK_FORMAT_R8G8B8A8_UNORM},
-													VK_FORMAT_D32_SFLOAT,
-													RenderPassType::Texture2D);
-	StandartPipelineInfo pipeline_info{};
-	pipeline_info.PrimitiveTopology		= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	pipeline_info.VertexStageInput		= vertex_inputs;
-	pipeline_info.VertexStage			= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/GBufferWrite.vert", VK_SHADER_STAGE_VERTEX_BIT);
-	pipeline_info.FargmentStage			= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/GBufferWrite.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
-	pipeline_info.RasterizationState	= &VulkanUsefuls_RasterizerState(VULKAN_USEFULS_RASTERIZER_STATE_FILL);
-	pipeline_info.MultisampleState		= &VulkanUsefuls_MultisamplerState(VULKAN_USEFULS_MULTISAMPLE_STATE_DEFAULT);
-	pipeline_info.ColorBlendState		= &VulkanUsefuls_BlendState(VULKAN_USEFULS_BLEND_STATE_WRITEOVER, GetGBufferAttachmentsCount());
-	pipeline_info.DepthStencilState		= &VulkanUsefuls_DepthStancilState(VULKAN_USEFULS_DEPTH_STANCIL_STATE_LESS);
-	pipeline_info.ExistingRenderPass	= render_pass.deferred;
+	PipelineState pipeline_info{};
+	pipeline_info.input.topology			= PrimitiveTopology::Triangles;
+	pipeline_info.input.vertexAttributes	= vertex_attributes;
+	pipeline_info.vertexStage				= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/GBufferWrite.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	pipeline_info.fargmentStage				= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/GBufferWrite.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	pipeline_info.rasterization.faceCulling = FaceCulling::Front;
+	pipeline_info.rasterization.polygonMode = PolygonMode::Fill;
+	pipeline_info.output.blendingStates		= BlendingStatesDeclarationParser::Parse("Blend Add One Zero");
+	pipeline_info.output.depthState			= AttachmentDepthState(true, true, ComparisonOperator::Less);
+	pipeline_info.output.existingRenderPass	= RenderPass::deferred;
 
-	CreateShade("BasicPbr", pipeline_info, Shade::Type::Deffered, false);
+	CreateShade("BasicPbr", pipeline_info, Shading::Type::Deffered, false);
 
 	//Create the "Deferred-Rendering" Pipeline...
 
-	InputAttributes framequad_inputs = {{0, 0, VK_FORMAT_R32G32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },		//Position
+	InputAttributes framequad_vertex_attributes = {{0, 0, VK_FORMAT_R32G32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX },		//Position
 										{0, 1, VK_FORMAT_R32G32_SFLOAT, VK_VERTEX_INPUT_RATE_VERTEX }};		//Bitangent
 
 	pipeline_info = {};
-	pipeline_info.PrimitiveTopology		= VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
-	pipeline_info.VertexStageInput		= framequad_inputs;
-	pipeline_info.VertexStage			= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Framequad.vert", VK_SHADER_STAGE_VERTEX_BIT);
-	pipeline_info.FargmentStage			= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Deferred.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
-	pipeline_info.RasterizationState	= &VulkanUsefuls_RasterizerState(VULKAN_USEFULS_RASTERIZER_STATE_FILL);
-	pipeline_info.MultisampleState		= &VulkanUsefuls_MultisamplerState(VULKAN_USEFULS_MULTISAMPLE_STATE_DEFAULT);
-	pipeline_info.ColorBlendState		= &VulkanUsefuls_BlendState(VULKAN_USEFULS_BLEND_STATE_ADD);
-	pipeline_info.DepthStencilState		= &VulkanUsefuls_DepthStancilState(VULKAN_USEFULS_DEPTH_STANCIL_STATE_LESS, true, true);
-	pipeline_info.ExistingRenderPass	= render_pass.forward;
+	pipeline_info.input.topology			= PrimitiveTopology::Triangles;
+	pipeline_info.input.vertexAttributes	= framequad_vertex_attributes;
+	pipeline_info.vertexStage				= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Framequad.vert", VK_SHADER_STAGE_VERTEX_BIT);
+	pipeline_info.fargmentStage				= CompileGLSLShader(Engine::graphics->GetVkDevice(), L"Engine/Shaders/Deferred.frag", VK_SHADER_STAGE_FRAGMENT_BIT);
+	pipeline_info.rasterization.faceCulling = FaceCulling::Front;
+	pipeline_info.rasterization.polygonMode = PolygonMode::Fill;
+	pipeline_info.output.blendingStates		= BlendingStatesDeclarationParser::Parse("Blend Add One One");
+	pipeline_info.output.depthState			= AttachmentDepthState(true, true, ComparisonOperator::Less);
+	pipeline_info.output.existingRenderPass = RenderPass::forward;
 
-	CreateShade("DeferredRendering", pipeline_info, Shade::Type::Forward, false);
+	CreateShade("DeferredRendering", pipeline_info, Shading::Type::Forward, false);
 	
 }
 
@@ -244,14 +245,13 @@ Void Engine::Renderer::Resize(Uint16 width_, Uint16 height_)
 	auto it = avalible_extents.find(extent);
 	if (it == avalible_extents.end())
 	{
-		CMemorySpace* const local_space = graphics->m_DeviceMemory.local_space;
+		CMemorySpace* const local_space = graphics->p_Device->MemorySpaces.local_space;
 
 		//Create a new the Frame Buffer correspoding to the new extent...
 		CTextureBase*			   gbuffers_depth_surface;//For some effect we want to access the depth in a regulat shade material so we need saperate depth resource
 		std::vector<CTextureBase*> gbuffers_surfaces;
 		CTextureBase*			   depth_surface;
 		CTextureBase*			   postprocs_surfaces[2];
-		std::vector<CTextureBase*> layers_surfaces(layers_cameras.size());
 
 		gbuffers_depth_surface	  = new CTexture2D(local_space, width_, height_, VK_FORMAT_D32_SFLOAT,		true, nullptr, nullptr, "GBuffer_Depth");
 		gbuffers_surfaces.push_back(new CTexture2D(local_space, width_, height_, VK_FORMAT_R8G8B8A8_UNORM,	true, nullptr, nullptr, "GBuffer_Color"));
@@ -265,19 +265,20 @@ Void Engine::Renderer::Resize(Uint16 width_, Uint16 height_)
 		postprocs_surfaces[1] = new CTexture2D(local_space, width_, height_, VK_FORMAT_B8G8R8A8_UNORM, true, nullptr, nullptr, "PostProcessed_1");
 
 		FrameBuffers new_frame_buffers;
-		new_frame_buffers.gbuffer			 = new CFrameBuffer(graphics->GetVkDevice(), gbuffers_surfaces, gbuffers_depth_surface, render_pass.deferred);
-		new_frame_buffers.canvas			 = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[1] }, depth_surface, render_pass.forward);
-		new_frame_buffers.post_processing[0] = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[0] }, nullptr, render_pass.postproc);
-		new_frame_buffers.post_processing[1] = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[1] }, nullptr, render_pass.postproc);
+		new_frame_buffers.gbuffer			 = new CFrameBuffer(graphics->GetVkDevice(), gbuffers_surfaces, gbuffers_depth_surface, RenderPass::deferred);
+		new_frame_buffers.canvas			 = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[1] }, depth_surface, RenderPass::forward);
+		new_frame_buffers.post_processing[0] = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[0] }, nullptr, RenderPass::postproc);
+		new_frame_buffers.post_processing[1] = new CFrameBuffer(graphics->GetVkDevice(), { postprocs_surfaces[1] }, nullptr, RenderPass::postproc);
 		
-
+		/*
 		new_frame_buffers.layers.resize(layers_cameras.size());
 		for (Uint i = 1 ; i < layers_cameras.size() ; i++)
 		{
 			layers_surfaces.at(i) = new CTexture2D(local_space, width_, height_, VK_FORMAT_B8G8R8A8_UNORM, true, nullptr, nullptr, "LayerSurface_" + std::to_string(i));
-			new_frame_buffers.layers.at(i) = new CFrameBuffer(graphics->GetVkDevice(), { layers_surfaces.at(i) }, nullptr, render_pass.postproc);
+			new_frame_buffers.layers.at(i) = new CFrameBuffer(graphics->GetVkDevice(), { layers_surfaces.at(i) }, nullptr, RenderPass::postproc);
 		}
-		
+		*/
+
 		avalible_extents.insert(std::pair<Extent, FrameBuffers>(extent, new_frame_buffers));
 
 		frame_buffers = new_frame_buffers;
@@ -300,14 +301,14 @@ Void Engine::Renderer::Resize(Uint16 width_, Uint16 height_)
 		frame_buffers.post_processing[0]->BindSurfaces(frame_descriptor_set, 10, Engine::UsefulSamplers::regular_nearest);
 		frame_buffers.post_processing[1]->BindSurfaces(frame_descriptor_set, 11, Engine::UsefulSamplers::regular_nearest);
 
-		for(Uint j = 1 ; j < frame_buffers.layers.size() ; j ++ )
-			frame_buffers.layers.at(j)->BindSurfaces(frames_info.at(i)->per_frame_descriptor_set, 12 + (j - 1), Engine::UsefulSamplers::regular_nearest);
+		//for(Uint j = 1 ; j < frame_buffers.layers.size() ; j ++ )
+			//frame_buffers.layers.at(j)->BindSurfaces(frames_info.at(i)->per_frame_descriptor_set, 12 + (j - 1), Engine::UsefulSamplers::regular_nearest);
 	}
 }
 
 Engine::Renderer::Renderer()
 {
-	shades = new CAllocatedList<Shade*>(ENGINE_MAXIMUM_MATERIALS_COUNT);
+	shades = new CAllocatedList<Shading*>(ENGINE_MAXIMUM_MATERIALS_COUNT);
 
 	CreateLayout();
 	CreateBasicGraphicsPipelines();
@@ -316,16 +317,14 @@ Engine::Renderer::Renderer()
 	frames_info.at(0) = new PerFrameInfo(this, 0);
 	frames_info.at(1) = new PerFrameInfo(this, 1);
 	frames_info.at(2) = new PerFrameInfo(this, 2);
-
-	AddNewLayer();//The main output layer
 }
 
 Engine::Renderer::~Renderer()
 {
-	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_sets_layout.per_resources_manager, nullptr);
-	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_sets_layout.per_object, nullptr);
-	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_sets_layout.per_frame, nullptr);
-	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_sets_layout.per_light, nullptr);
+	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_set_layouts[DescriptorSetLayouts::PerResourceManager], nullptr);
+	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_set_layouts[DescriptorSetLayouts::PerGameObject], nullptr);
+	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_set_layouts[DescriptorSetLayouts::PerCamera], nullptr);
+	vkDestroyDescriptorSetLayout(graphics->GetVkDevice(), descriptor_set_layouts[DescriptorSetLayouts::PerLight], nullptr);
 
 	vkDestroyPipelineLayout(graphics->GetVkDevice(), layout, nullptr);
 }

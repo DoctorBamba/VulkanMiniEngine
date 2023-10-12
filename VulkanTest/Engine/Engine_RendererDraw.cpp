@@ -2,15 +2,15 @@
 #include "Engine_BasicMeshs.h"
 
 //Update Buffers...
-Void Engine::Renderer::UpdateLookBuffer(CCamera* camera_, Uint layout_, Uint frame_index_)
+Void Engine::Renderer::UpdateLookBuffer(CCamera* camera_, Uint frame_index_)
 {
-	if (layout_ >= layers_cameras.size())
-		throw std::range_error("Renderer :: UpdateLookBuffer Error -> layout must be lower then the number to layers!");
+	frames_info.at(frame_index_)->look_ubuffer->Update(camera_->GetLookBuffer(), camera_->GetCameraId());
 
-	frames_info.at(frame_index_)->look_ubuffer->Update(camera_->GetLookBuffer(), layout_);
-	layers_cameras.at(layout_) = camera_;
+	auto pp_invocations = camera_->GetPostPocessingInvocations();
+
+	for (auto pp_invocation_it = pp_invocations.begin(); pp_invocation_it != pp_invocations.end(); pp_invocation_it++)
+		frames_info.at(frame_index_)->pp_invocation_ubuffer->Update(pp_invocation_it->properties_block, ENGINE_MAXIMUM_PP_INVOCS_PER_CAMERA_COUNT * camera_->GetCameraId());
 };
-
 
 Void Engine::Renderer::UpdateObjectsBuffers(CObject* object_, Uint frame_index_)
 {
@@ -101,7 +101,7 @@ Void Engine::Renderer::BindObject(CGpuDrawTask* draw_task_, CObject* object_)
 	}
 }
 
-//In propuse to save unnessecerly Pipeline bind calls the we sort all visible objects into arrays base on the
+//In propuse to save unnessecerly Pipeline bind calls we sort all visible objects into arrays base on the
 //The next function sort Object hirarchy into shade instance base on the shade they use...
 Void Engine::Renderer::SortObject(CObject* object_, Uint layer_)
 {
@@ -114,7 +114,7 @@ Void Engine::Renderer::SortObject(CObject* object_, Uint layer_)
 		if (material == nullptr)
 			throw std::runtime_error("Renderer :: SortObject Error -> The mesh '" + object_->GetMesh(0)->GetName() + "' material undefine!!!");
 
-		Shade* shade = shades->At(material->GetShadeId());
+		Shading* shade = shades->At(material->GetShadeId());
 		shade->instances[shade->instances_count] = object_;
 		shade->instances_count ++;
 	}
@@ -143,7 +143,7 @@ Void Engine::Renderer::DrawObject(CGpuDrawTask* draw_task_, CObject* object_, Ui
     if (object_->GetMeshsNumber() > 0)
     {
 		BindObject(draw_task_, object_);
-        object_->GetMesh(0)->Render(draw_task_);
+        object_->GetMesh(0)->Draw(draw_task_);
     }
 
     //Draw object's childrens...
@@ -152,7 +152,7 @@ Void Engine::Renderer::DrawObject(CGpuDrawTask* draw_task_, CObject* object_, Ui
 }
 
 
-Void Engine::Renderer::DrawScene(CGpuDrawTask* draw_task_, CScene* scene_, CFrameBuffer* output_, Uint layer_)
+Void Engine::Renderer::DrawScene(CGpuDrawTask* draw_task_, CScene* scene_, CCamera* camera_)
 {
 	//First step(Write To GBuffer)...
 	
@@ -161,14 +161,14 @@ Void Engine::Renderer::DrawScene(CGpuDrawTask* draw_task_, CScene* scene_, CFram
 
 	for (auto i = shades->Begin(); i != shades->End(); i = shades->Next(i))
 	{
-		Shade* shade = i->value;
-		if (shade->type != Shade::Type::Deffered)
+		Shading* shade = i->value;
+		if (shade->type != Shading::Type::Deffered)
 			continue;
 
 		shade->pipeline->Bind(draw_task_->GetCommandBuffer());
 
 		for (Uint j = 0; j < shade->instances_count; j++)
-			DrawObject(draw_task_, shade->instances[j], layer_);
+			DrawObject(draw_task_, shade->instances[j], camera_->GetLayer());
 	}
 
 	frame_buffers.gbuffer->Close(draw_task_->GetCommandBuffer());
@@ -185,97 +185,102 @@ Void Engine::Renderer::DrawScene(CGpuDrawTask* draw_task_, CScene* scene_, CFram
 		vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
 			3, 1, &(frames_info.at(draw_task_->GetFrameIndex())->per_light_descriptor_set), 1, &offset);
 
-		Meshs::Quad2D->Render(draw_task_);//Draw frame quad
+		Meshs::Quad2D->Draw(draw_task_);//Draw frame quad
 	}
 
-	scene_->CallObjectsDrawEvent(draw_task_, layer_);
+	scene_->CallObjectsDrawEvent(draw_task_, camera_);
 
 	for (auto i = shades->Begin(); i != shades->End(); i = shades->Next(i))
 	{
-		Shade* shade = i->value;
-		if (shade->type != Shade::Type::Forward)
+		Shading* shade = i->value;
+		if (shade->type != Shading::Type::Forward)
 			continue;
 
 		shade->pipeline->Bind(draw_task_->GetCommandBuffer());
 
 		for (Uint j = 0; j < shade->instances_count; j++)
-			DrawObject(draw_task_, shade->instances[j], layer_);
+			DrawObject(draw_task_, shade->instances[j], camera_->GetLayer());
 	}
 
 	frame_buffers.canvas->Close(draw_task_->GetCommandBuffer());
 	frame_buffers.canvas->Barrier(draw_task_->GetCommandBuffer(), CFrameBuffer::BarrierState::RESOURCE);
-
-	//Third step(Post processing stage)...
-	//In the post processing stage we have tow regular rgba-frame-buffers one.
-	//In each post processing call we write into one of those frame buffer while 
-	//the other one can used has a shader resource.
-	//At the last post processing call we open the output target instad to write 
-	//into the window or render-port target buffer.
-	//In the post processing stage you allow to bind input shader data throw the per-frame binding set layout at location 16.
-	
-	Uint offsets[2] = { 0, 0 };
-	Uint target_index, source_index;
-	Int i = 0;
-	
-	if(post_processings_calls.size() > 0)
-	{//Last post-processing call...
-		source_index = post_processings_calls.size() % 2;
-
-		output_->Open(draw_task_->GetCommandBuffer());
-		post_processings_calls.at(i)->Bind(draw_task_->GetCommandBuffer());
-		vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
-			1, 1, &(frames_info.at(draw_task_->GetFrameIndex())->per_frame_descriptor_set), 2, offsets);
-		vkCmdPushConstants(draw_task_->GetCommandBuffer(), layout, VK_SHADER_STAGE_ALL, 0, sizeof(Uint), &source_index);
-		Meshs::Quad2D->Render(draw_task_);//Draw frame quad
-		output_->Close(draw_task_->GetCommandBuffer());
-
-		offsets[1] += sizeof(GpuPropertiesBlockStruct);
-	}
-
-	post_processings_calls.clear();//Clear the post processing call for the next frame recording
 }
 
 //Draw Entire Scene...
-Void Engine::Renderer::Render(CGpuDrawTask* draw_task_, CFrameBuffer* output_, CScene* scene_)
+Void Engine::Renderer::Draw(CGpuDrawTask* draw_task_, CScene* scene_)
 {
 	//Sort scene object...
 	SortScene(scene_);
 
-	//Bind static descriptor set
+	//Update scene buffers
+	UpdateSceneBuffers(scene_, draw_task_->GetFrameIndex());
+
+	//Bind static descriptor set...
 	VkDescriptorSet static_set = resource_manager->GetDescriptorSet();
 	vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
 		0, 1, &static_set, 0, nullptr);
 	
-	//Offsets...
-	const Uint camera_ubuffer_size = frames_info.at(draw_task_->GetFrameIndex())->look_ubuffer->GetAligmentSize();
+	//Draw scene into all cameras...
 	Uint offsets[2] = { 0, 0 };
-	
-	for (Uint i = 1 ; i < frame_buffers.layers.size() ; i ++)
+	Uint& camera_offset = offsets[0];
+
+
+	for (std::map<Float, CCamera*>::iterator it = scene_->GetAllCameras()->begin() ; it != scene_->GetAllCameras()->end() ; it ++)
 	{
-		offsets[0] += camera_ubuffer_size;
+		CCamera* camera = it->second;
+		camera_offset = camera->GetCameraId();
+
+		if (!bounded_cameras[camera_offset].bounded && camera->GetFrameBuffer()->IsBoundable())
+		{
+			Engine::resource_manager->AddTexturesPacket({ camera->GetFrameBuffer()->GetDepthStencilSurface(), camera->GetFrameBuffer()->GetColorSurface(0) });
+			bounded_cameras[camera_offset].depth_loc	= Engine::resource_manager->GetTextureLocation(camera->GetFrameBuffer()->GetDepthStencilSurface());
+			bounded_cameras[camera_offset].color_loc[0] = Engine::resource_manager->GetTextureLocation(camera->GetFrameBuffer()->GetColorSurface(0));
+		
+			bounded_cameras[camera_offset].bounded = true;
+		}
+
 		vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
 			1, 1, &(frames_info.at(draw_task_->GetFrameIndex())->per_frame_descriptor_set), 2, offsets);
 		
-		frame_buffers.layers.at(i)->Barrier(draw_task_->GetCommandBuffer(), CFrameBuffer::BarrierState::TARGET);
-		DrawScene(draw_task_, scene_, frame_buffers.layers.at(i), (Uint)DrawLayers::Reflections);
-		frame_buffers.layers.at(i)->Barrier(draw_task_->GetCommandBuffer(), CFrameBuffer::BarrierState::RESOURCE);
-	}
+		DrawScene(draw_task_, scene_, camera);
 
-	offsets[0] = 0;
-	vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
-		1, 1, &(frames_info.at(draw_task_->GetFrameIndex())->per_frame_descriptor_set), 2, offsets);
+		UpdateLookBuffer(camera, draw_task_->GetFrameIndex());/*Importent Note! : All of the recent recorded draw commands only will only be performed in the future so you might
+		assume that its not importent whether the calling to this buffer update comes befor or after the 'DrawScene' call, But for certain reasons I prefer it to be possible
+		to add a post-processing-invocation from the gameobject's 'draw' call, And that why i call this function after 'DrawScene' call!*/
 	
-	DrawScene(draw_task_, scene_, output_, (Uint)DrawLayers::Base);
-}
 
-Uint Engine::Renderer::AddNewLayer()
-{
-	layers_cameras.push_back(nullptr);
-	return layers_cameras.size() - 1;
-}
+		//Third step(Post processing stage)...
+		//In the post processing stage we have tow regular rgba-frame-buffers one.
+		//In each post processing call we write into one of those frame buffer while 
+		//the other one can used has a shader resource.
+		//At the last post processing call we open the output target instad to write 
+		//into the window or render-port target buffer.
+		//In the post processing stage you allow to bind input shader data throw the per-frame binding set layout at location 16.
+	
 
-Void Engine::Renderer::AddPostProcessingCall(CPipeline* pipeline_, const GpuPropertiesBlockStruct& shader_input_, Uint frame_index_)
-{
-	frames_info.at(frame_index_)->postcall_ubuffer->Update(shader_input_, post_processings_calls.size());
-	post_processings_calls.push_back(pipeline_);
+		Uint offsets[2] = { 0, 0 };
+		Uint target_index, source_index;
+		Int invocation_counter = 0;
+		
+		auto pp_invocations = camera->GetPostPocessingInvocations();
+		
+		for (auto pp_invocation_it = pp_invocations.begin() ; pp_invocation_it != pp_invocations.end() ; pp_invocation_it++)
+		{
+			offsets[1] = ENGINE_MAXIMUM_PP_INVOCS_PER_CAMERA_COUNT * camera->GetCameraId() + invocation_counter;
+
+			camera->GetFrameBuffer()->Open(draw_task_->GetCommandBuffer());
+			pp_invocation_it->pipeline->Bind(draw_task_->GetCommandBuffer());
+
+			vkCmdBindDescriptorSets(draw_task_->GetCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, renderer->GetLayout(),
+				DescriptorSetLayouts::PerCamera, 1, &(frames_info.at(draw_task_->GetFrameIndex())->per_frame_descriptor_set), 2, offsets);
+			
+
+			Meshs::Quad2D->Draw(draw_task_);//Draw frame quad
+
+			camera->GetFrameBuffer()->Close(draw_task_->GetCommandBuffer());
+			invocation_counter++;
+		}
+
+		camera->ResetPostProcessingInvocation();
+	}
 }

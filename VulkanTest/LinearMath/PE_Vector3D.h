@@ -10,7 +10,7 @@
 template<typename T> class Vector3D__
 {
 	static const size_t dim = 3;
-	private:
+	public:
 		//Data...
 		T	x;
 		T	y;
@@ -57,7 +57,12 @@ template<typename T> class Vector3D__
 		//More...
 
 		const double lenght() const;
+
+		public:
+			static Vector3D__<T> const Zero;
 };
+
+template<typename T> inline Vector3D__<T> const Vector3D__<T>::Zero = Vector3D__<T>(T(), T(), T());
 
 //Difualt vector3D types...
 

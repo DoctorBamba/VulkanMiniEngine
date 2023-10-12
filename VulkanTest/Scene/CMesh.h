@@ -1,5 +1,8 @@
 #pragma once
 
+#include "CMaterial.h"
+
+
 #include "assimp/scene.h"
 #include "assimp/mesh.h"
 #include "assimp/material.h"
@@ -10,8 +13,6 @@
 #pragma comment(lib, "assimp-vc142-mtd.lib")
 
 #include "../Graphics/Buffers/CVertexBuffer.h"
-
-#include "CMaterial.h"
 
 #include "../Engine/Engine_Graphics.h"
 #include "../Engine/ResourcesManagers/Engine_ResourcesManager.h"
@@ -62,13 +63,13 @@ class CMeshBase
 
 		const aiMesh* ai_pointer;
 
-		VkDevice* p_DeviceContext;
+		VkDevice* p_Device;
 
 	public:
 
 		MeshTopologyType GetTopologyType() const { return topology_type; }
 		virtual Void UploadBuffers(CGpuUploadTask* upload_commands_) {}
-		virtual Void Render(CGpuTask* task_) {}
+		virtual Void Draw(CGpuTask* task_) {}
 
 
 		
@@ -254,7 +255,7 @@ template<class Vertex> class CMesh : public CMeshBase
 				return;
 			}
 			
-			VulkanDevice* device = upload_task_->GetDevice();
+			CVulkanDevice* device = upload_task_->GetDevice();
 
 			if (vertices_number > 0)
 				gpu_vertex_buffer = new CVertexBuffer<Vertex>(device, vertices_number, upload_task_, vertices.data());
@@ -264,7 +265,7 @@ template<class Vertex> class CMesh : public CMeshBase
 		}
 
 
-		Void Render(CGpuTask* task_)
+		Void Draw(CGpuTask* task_)
 		{
 			if (0 < faces_number)
 			{
@@ -276,7 +277,6 @@ template<class Vertex> class CMesh : public CMeshBase
 			{
 				gpu_vertex_buffer->Bind(task_->GetCommandBuffer(), 0, sizeof(Vertex));
 				vkCmdDraw(task_->GetCommandBuffer(), vertices_number, 1, 0, 0);
-				int y = 5;
 			}
 		}
 

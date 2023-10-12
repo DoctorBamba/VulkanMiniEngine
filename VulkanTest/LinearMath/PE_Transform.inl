@@ -57,15 +57,27 @@ inline const Matrix4D__<T> Rotate(const Quaternion__<T>& quat)
 }
 
 template<typename T>
+inline const Matrix4D__<T> Transform(const Vector3D__<T>& position, const Matrix3D__<T>& orientation, const Vector3D__<T>& scale)
+{
+	const T* P = (T*)&(orientation);
+
+	return Matrix4D__<T>(	P[0] * scale[0], P[1] * scale[1], P[2]  * scale[2], position[0],
+							P[3] * scale[0], P[4] * scale[1], P[5]  * scale[2], position[1],
+							P[6] * scale[0], P[7] * scale[1], P[8] * scale[2], position[2],
+							T()				  , T()				  , T()				  ,	T(1.0f));
+}		
+
+template<typename T>
 inline const Matrix4D__<T> Transform(const Vector3D__<T>& position, const Quaternion& orientation, const Vector3D__<T>& scale)
 {
 	const T* P = (T*)&(Rotate(orientation));
 
-	return Matrix4D__<T>(P[0] * scale[0], P[1] * scale[1], P[2]  * scale[2], position[0],
+	return Matrix4D__<T>(	P[0] * scale[0], P[1] * scale[1], P[2]  * scale[2], position[0],
 							P[4] * scale[0], P[5] * scale[1], P[6]  * scale[2], position[1],
 							P[8] * scale[0], P[9] * scale[1], P[10] * scale[2], position[2],
 							T()				  , T()				  , T()				  ,	T(1.0f));
-}				
+}
+
 
 template<typename T>
 inline const Quaternion__<T> Orientation(const Matrix4D__<T>& ortho_matrix)
@@ -148,21 +160,21 @@ const Matrix4D__<T> Perspective(T angle_, T aspect_, T near_, T far_)
 }
 
 template<class T>
-Void DismantleTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Matrix3D__<T>* orientation_out)
+Void DecomposeTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Matrix3D__<T>* orientation_out)
 {
 	Float d1 = sqrt(transform[0][0] * transform[0][0] + transform[1][0] * transform[1][0] + transform[2][0] * transform[2][0]);
 	Float d2 = sqrt(transform[0][1] * transform[0][1] + transform[1][1] * transform[1][1] + transform[2][1] * transform[2][1]);
 	Float d3 = sqrt(transform[0][2] * transform[0][2] + transform[1][2] * transform[1][2] + transform[2][2] * transform[2][2]);
 
 	*position_out		= Vector3D(transform[0][3], transform[1][3], transform[2][3]);
-	*scale_out			= PE_Vector3D(d1, d2, d3);
+	*scale_out			= Vector3D(d1, d2, d3);
 	*orientation_out	= Matrix3D(transform[0][0] / d1, transform[0][1] / d2, transform[0][2] / d3,
 									  transform[1][0] / d1, transform[1][1] / d2, transform[1][2] / d3,
 									  transform[2][0] / d1, transform[2][1] / d2, transform[2][2] / d3);
 }
 
 template<class T>
-Void DismantleTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Quaternion__<T>* orientation_out)
+Void DecomposeTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Quaternion__<T>* orientation_out)
 {
 	Float d0 = sqrt(transform[0][0] * transform[0][0] + transform[1][0] * transform[1][0] + transform[2][0] * transform[2][0]);
 	Float d1 = sqrt(transform[0][1] * transform[0][1] + transform[1][1] * transform[1][1] + transform[2][1] * transform[2][1]);
@@ -218,12 +230,12 @@ Matrix4D__<T> Interpolate(const Matrix4D__<T>& start, const Matrix4D__<T>& end, 
 	Vector3D__<T>	start_position;
 	Quaternion__<T>	start_orientation;
 	Vector3D__<T>	start_scale;
-	DismantleTransform(start, &start_position, &start_scale, &start_orientation);
+	DecomposeTransform(start, &start_position, &start_scale, &start_orientation);
 
 	Vector3D__<T>	end_position;
 	Quaternion__<T>	end_orientation;
 	Vector3D__<T>	end_scale;
-	DismantleTransform(end, &end_position, &end_scale, &end_orientation);
+	DecomposeTransform(end, &end_position, &end_scale, &end_orientation);
 
 
 	return Transform((1.0f - t) * start_position + t * end_position,

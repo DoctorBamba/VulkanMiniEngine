@@ -229,7 +229,7 @@ Void CArmature::UpdateBonesBuffers(Uint frame_index_)
 	gpu_bones_poses[frame_index_]->Get_MappedMemory();
 }
 
-Void CArmature::ActiveAnimation(const CAnimation *animation_, Double time_, InterpFunction interpolation_func_)
+Void CArmature::ApplyAnimation(const CAnimation *animation_, Double time_, InterpFunction interpolation_func_)
 {
 	//Determine animation time...
 
@@ -316,7 +316,7 @@ Void CArmature::RecursiveBonesUpdate(const CAnimation* animation_, Float animati
 	{
 		// Get interpolated matrices between current and next frames
 		Vector3D	  scale		  = SampleScale(animation_time_, animation_->duriation, participator, interpolation_func_);
-		Quaternion rotation	  = SampleRotation(animation_time_, animation_->duriation, participator, interpolation_func_);
+		Quaternion	  rotation	  = SampleRotation(animation_time_, animation_->duriation, participator, interpolation_func_);
 		Vector3D	  translation = SampleTranslation(animation_time_, animation_->duriation, participator, interpolation_func_);
 
 		object_transform		 = perant_transform_ * Transform(translation, rotation, scale);

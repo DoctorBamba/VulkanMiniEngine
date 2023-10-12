@@ -3,7 +3,7 @@
 Bool CTextureBase::SupportMemoryType(Uint memory_type_)
 {
 	VkMemoryRequirements memory_requirements;
-	vkGetImageMemoryRequirements(p_DeviceContext->device, p_Image, &memory_requirements);
+	vkGetImageMemoryRequirements(p_Device->device, p_Image, &memory_requirements);
 
 	return (Bool)(memory_requirements.memoryTypeBits & memory_type_);
 }
@@ -27,6 +27,95 @@ VkAccessFlagBits CTextureBase::GetRequierdAccessFlag(VkImageLayout image_layout_
 	else
 		return VK_ACCESS_NONE_KHR;
 }
+
+VkImageSubresourceRange CTextureBase::GetSubresourceRange()
+{
+	VkImageAspectFlags aspect_flags = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+
+	if (IsDepthFormat(m_Format))
+		aspect_flags = VK_IMAGE_ASPECT_DEPTH_BIT;
+	else if (IsColorFormat(m_Format))
+		aspect_flags = VK_IMAGE_ASPECT_COLOR_BIT;
+
+	VkImageSubresourceRange subresource_range;
+	subresource_range.aspectMask		= aspect_flags;
+	subresource_range.baseMipLevel		= 0;
+	subresource_range.levelCount		= 1;
+	subresource_range.baseArrayLayer	= 0;
+	subresource_range.layerCount		= m_Layers;
+
+	return subresource_range;
+}
+
+const VkImageType TextureDimensionToImageTypeTable[] =
+{
+	VK_IMAGE_TYPE_1D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_3D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_2D,
+	VK_IMAGE_TYPE_2D
+};
+
+const VkImageCreateFlags TextureDimensionToCompatibilityFlagTable[] =
+{
+	0,
+	0,
+	0,
+	VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT,
+	VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+	VK_IMAGE_CREATE_2D_ARRAY_COMPATIBLE_BIT | VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT
+};
+
+Void CTextureBase::CreateBuffer(Bool attachment_usage_, Pointer construct_data_, CGpuUploadTask* upload_task_)
+{
+	VkImageUsageFlags usage = VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT;
+
+	if (IsDepthFormat(m_Format))
+	{
+		if (attachment_usage_)
+			usage |= VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+	}
+	else if (IsColorFormat(m_Format))
+	{
+		if (attachment_usage_)
+			usage |= VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+	}
+
+	VkImageCreateInfo image_desc{};
+	image_desc.sType			= VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+
+	image_desc.imageType		= TextureDimensionToImageTypeTable[(Uint)m_Dimension];
+	image_desc.format			= m_Format;
+	image_desc.extent.width		= m_Width;
+	image_desc.extent.height	= m_Height;
+	image_desc.extent.depth		= 1;
+	image_desc.arrayLayers		= m_Layers;
+	image_desc.mipLevels		= 1;
+	image_desc.usage			= usage;
+	image_desc.tiling			= VK_IMAGE_TILING_OPTIMAL;
+	image_desc.samples			= VK_SAMPLE_COUNT_1_BIT;
+	image_desc.initialLayout	= VK_IMAGE_LAYOUT_UNDEFINED;//The resource state undefine at the begining.
+	image_desc.sharingMode		= VK_SHARING_MODE_EXCLUSIVE;
+	image_desc.flags			= TextureDimensionToCompatibilityFlagTable[(Uint)m_Dimension];
+
+	if (vkCreateImage(p_MemorySpace->GetDevice()->device, &image_desc, nullptr, &p_Image) != VK_SUCCESS)
+	{
+		throw std::runtime_error("CTexture2D :: CreateBuffer Error -> Failed to create the texture buffer!");
+		return;
+	}
+
+	VkMemoryRequirements memory_requirements;
+	vkGetImageMemoryRequirements(p_Device->device, p_Image, &memory_requirements);
+	m_RequiredSize	= memory_requirements.size;
+	m_Layout		= image_desc.initialLayout;
+
+	m_BindingLocation = p_MemorySpace->BindTexture(this);
+
+	if(construct_data_ != nullptr && upload_task_ != nullptr)
+		Upload(construct_data_, upload_task_);
+}
+
 
 VkImageMemoryBarrier CTextureBase::BarrierTranslation(VkImageLayout new_layout_)
 {
@@ -72,14 +161,14 @@ Void CTextureBase::Bind(VkDescriptorSet descriptor_set_, Uint binding_, Uint arr
 	descriptor_write.pImageInfo			= &image_info;
 	descriptor_write.pTexelBufferView	= nullptr;
 
-	vkUpdateDescriptorSets(p_DeviceContext->device, 1, &descriptor_write, 0, nullptr);
+	vkUpdateDescriptorSets(p_Device->device, 1, &descriptor_write, 0, nullptr);
 }
 
 CTextureBase::~CTextureBase()
 {
 	if (p_ImageView != nullptr)
-		vkDestroyImageView(p_DeviceContext->device, p_ImageView, nullptr);
+		vkDestroyImageView(p_Device->device, p_ImageView, nullptr);
 
 	if (p_Image != nullptr)
-		vkDestroyImage(p_DeviceContext->device, p_Image, nullptr);
+		vkDestroyImage(p_Device->device, p_Image, nullptr);
 }

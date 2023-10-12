@@ -45,7 +45,7 @@ struct DepthmapProperties
 class CLight : public virtual CObject
 {
 	protected:
-		Vector4D		color;
+		Vector4D	color;
 		Float		distance;
 		Float		fallout_const;
 		Float		fallout_linear;
@@ -70,18 +70,12 @@ class CLight : public virtual CObject
 			shadow_technique	= SHADOW_TECHNIQUE_UNKNOW;
 		}
 
-		Vector3D	GetAbsolutePosition()
-		{
-			Matrix4D transform = GetTransform();
-			return Vector3D(transform[0][3], transform[1][3], transform[2][3]);
-		}
-
 		Vector4D GetColor() { return this->color; }
 		Float	GetDistance() { return this->distance; }
 
 
 		Void SetColor(const Vector4D& color_) { this->color = color_; }
-		Void	SetDistance(const DOUBLE distance_) { this->distance = distance_; }
+		Void SetDistance(const Double distance_) { this->distance = distance_; }
 		Void SetFallout(Float fallout_const_, Float fallout_linear_, Float fallout_sqr_)
 		{
 			this->fallout_const		= fallout_const_;
@@ -151,7 +145,7 @@ class CSpotLight : public CLight, public CPersCamera
 
 		Engine::GpuLightStruct GetGpuStruct()
 		{
-			Vector3D position = GetAbsolutePosition();
+			Vector3D position = GetPosition();
 
 			Engine::GpuLightStruct buffer;
 

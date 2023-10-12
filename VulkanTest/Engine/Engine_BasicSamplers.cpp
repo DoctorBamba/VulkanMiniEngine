@@ -8,7 +8,7 @@ namespace Engine::UsefulSamplers
 	VkSampler high_quality_linear;
 }
 
-Void Engine::CreateBasicSamplers(VulkanDevice* device_)
+Void Engine::CreateBasicSamplers(CVulkanDevice* device_)
 {
 	VkSamplerCreateInfo sampler_desc{};
 	sampler_desc.sType						= VK_STRUCTURE_TYPE_SAMPLER_CREATE_INFO;

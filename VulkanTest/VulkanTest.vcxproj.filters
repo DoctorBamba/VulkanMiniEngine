@@ -61,6 +61,24 @@
     <Filter Include="Source Files\Engine\ResourcesManager">
       <UniqueIdentifier>{ff059abe-6764-44cc-bf0b-445b1308d197}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Header Files\UI">
+      <UniqueIdentifier>{4b8acdd6-586c-4279-a7cc-fdf6dfe62c05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\UI">
+      <UniqueIdentifier>{5ff9ff75-4c0f-4384-8c67-94b750274a18}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\UI\Shaders">
+      <UniqueIdentifier>{70120729-f0cd-42ec-ab35-5b2d4a2b3048}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Header Files\Physics">
+      <UniqueIdentifier>{dfab0d02-0120-4595-8cab-0ad70a996a72}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\Physics">
+      <UniqueIdentifier>{596f8c83-7985-4bf7-ab9b-c346ac766e53}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Resource Files\Shaders\Physics">
+      <UniqueIdentifier>{68a77e30-974a-4be1-9911-2b47f039c0c0}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="CApplication.h">
@@ -93,9 +111,6 @@
     <ClInclude Include="Graphics\CTextureBase.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\CPipeline.h">
-      <Filter>Header Files\Graphics</Filter>
-    </ClInclude>
     <ClInclude Include="Graphics\FormatsMap.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
@@ -108,7 +123,7 @@
     <ClInclude Include="Graphics\Buffers\CBuffer.h">
       <Filter>Header Files\Graphics\Buffers</Filter>
     </ClInclude>
-    <ClInclude Include="Graphics\CMemoryManager.h">
+    <ClInclude Include="Graphics\CMemorySpace.h">
       <Filter>Header Files\Graphics</Filter>
     </ClInclude>
     <ClInclude Include="Graphics\CAllocator.h">
@@ -206,6 +221,39 @@
     </ClInclude>
     <ClInclude Include="Engine\ResourcesManagers\Engine_GameObjectsManager.h">
       <Filter>Header Files\Engine\ResourcesManagers</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CDevice.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="EUI\UiWidget.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EUI\UiWidgetRenderer.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EUI\UiGraphics.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="EUI\UiFonts.h">
+      <Filter>Header Files\UI</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CTexture2DArray.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="StringUtils.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\CPipeline.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Graphics\ComputePipeline.h">
+      <Filter>Header Files\Graphics</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\PhysicsPipeline.h">
+      <Filter>Header Files\Physics</Filter>
+    </ClInclude>
+    <ClInclude Include="Physics\Collider.h">
+      <Filter>Header Files\Physics</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
@@ -311,6 +359,30 @@
     <ClCompile Include="Engine\ResourcesManagers\Engine_ResourceManager.cpp">
       <Filter>Source Files\Engine\ResourcesManager</Filter>
     </ClCompile>
+    <ClCompile Include="EUI\UiWidget.cpp">
+      <Filter>Header Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="EUI\UiWidgetRenderer.cpp">
+      <Filter>Header Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\CTexture2DArray.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="EUI\UiFonts.cpp">
+      <Filter>Header Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="EUI\UiGraphics.cpp">
+      <Filter>Header Files\UI</Filter>
+    </ClCompile>
+    <ClCompile Include="StringUtils.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Graphics\ComputePipeline.cpp">
+      <Filter>Source Files\Graphics</Filter>
+    </ClCompile>
+    <ClCompile Include="Physics\PhysicsPipeline.cpp">
+      <Filter>Source Files\Physics</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Engine\Shaders\GBufferWrite.frag">
@@ -381,6 +453,12 @@
     </None>
     <None Include="PixelShader.frag">
       <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="EUI\Shaders\widget.vert">
+      <Filter>Resource Files\UI\Shaders</Filter>
+    </None>
+    <None Include="Physics\ComputeShaders\CollisionDetection.comp">
+      <Filter>Resource Files\Shaders\Physics</Filter>
     </None>
   </ItemGroup>
 </Project>

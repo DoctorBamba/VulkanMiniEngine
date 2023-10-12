@@ -1,6 +1,6 @@
 #pragma once
 #include "FormatsMap.h"
-#include "CMemoryManager.h"
+#include "CDevice.h"
 #include "CGpuTask.h"
 #include "Buffers/CIntermidiate.h"
 
@@ -32,15 +32,27 @@ class CTextureBase
 			CREATE_FROM_BUFFER
 		};
 
+		enum class Dimension
+		{
+			Texture1D,
+			Texture2D,
+			Texture3D,
+			Texture2DArray,
+			Texture2DCube,
+			Texture2DCubeArray
+		};
+
 	protected:
 		std::string				m_Name;
 		std::wstring			m_ImagePath; //Optional
 
 		Uint16					m_Width;
 		Uint16					m_Height;
+		Uint16					m_Layers = 1;
 
 		VkFormat				m_Format;
 		VkImageLayout			m_Layout;
+
 		Uint					m_RequiredSize;
 
 		VkImage					p_Image;
@@ -49,24 +61,27 @@ class CTextureBase
 		CMemorySpace::BindingLocation m_BindingLocation;
 
 		const CreationWay m_CreationWay;
-		
-		VulkanDevice* const p_DeviceContext;
+		const Dimension	  m_Dimension;
+
+		CVulkanDevice* const p_Device;
 		CMemorySpace* const	p_MemorySpace;
 
 	protected:
-		CTextureBase(VulkanDevice* device_) : m_CreationWay(CreationWay::CREATE_FROM_BUFFER), p_DeviceContext(device_), p_MemorySpace(nullptr) {}
-		CTextureBase(CMemorySpace* memory_type_, CreationWay creation_way_) : m_CreationWay(creation_way_), p_DeviceContext(memory_type_->GetDevice()), p_MemorySpace(memory_type_){}
+		CTextureBase(CVulkanDevice* device_) : m_CreationWay(CreationWay::CREATE_FROM_BUFFER), m_Dimension(Dimension::Texture2D), p_Device(device_), p_MemorySpace(nullptr) {}
+		CTextureBase(CMemorySpace* memory_type_, Dimension dimantion, CreationWay creation_way_) : m_CreationWay(creation_way_), m_Dimension(dimantion), p_Device(memory_type_->GetDevice()), p_MemorySpace(memory_type_){}
 
 		VkAccessFlagBits GetRequierdAccessFlag(VkImageLayout layout_);
 
-		virtual VkImageSubresourceRange GetSubresourceRange() { return {}; }
+		VkImageSubresourceRange GetSubresourceRange();
 
 	public:
 
 		virtual ~CTextureBase();
 
-		virtual Void CreateBuffer(Bool attachment_usage_, Pointer construct_data_ = nullptr, CGpuUploadTask* upload_task_ = nullptr) {};
+		Void CreateBuffer(Bool attachment_usage_, Pointer construct_data_ = nullptr, CGpuUploadTask* upload_task_ = nullptr);
+		
 		virtual Void CreateView() {};
+		virtual Void Upload(Pointer construct_data_, CGpuUploadTask* upload_task_) {};
 
 		Void Barrier(VkImageLayout new_layout_, CGpuTask* task_);
 		Void Bind(VkDescriptorSet descriptor_set_, Uint binding_, Uint array_index_ = 0) const;
@@ -85,5 +100,8 @@ class CTextureBase
 		VkImageLayout GetImageLayout() { return m_Layout; }
 
 		VkImageMemoryBarrier BarrierTranslation(VkImageLayout new_layout_);
+
+		Bool IsBoundable() { return m_CreationWay != CreationWay::CREATE_FROM_BUFFER; }
+		Bool IsBaseOnBuffer() { return m_CreationWay == CreationWay::CREATE_FROM_BUFFER; }
 
 };

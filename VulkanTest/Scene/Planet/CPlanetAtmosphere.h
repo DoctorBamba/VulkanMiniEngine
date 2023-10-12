@@ -26,5 +26,5 @@ class CPlanetAtmosphere : public CObject
 		CPlanetAtmosphere(Float radious_);
 
 		Void Init(CGpuUploadTask* upload_task_) override;
-		Void Render(CGpuDrawTask* draw_task_, Uint layer_) override;
+		Void Draw(CGpuDrawTask* draw_task_, CCamera* camera_) override;
 };

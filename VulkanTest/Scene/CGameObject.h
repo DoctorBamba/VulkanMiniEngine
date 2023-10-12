@@ -64,6 +64,8 @@ class CObject
 		Matrix4D*		GetTransformPointer(){return &offset_transform;}
 		Matrix4D		GetTransform();
 		Vector3D		GetPosition();
+
+
 		//Hirarcy functions...
 		CObject*	GetParent() const { return this->parent; }
 
@@ -87,7 +89,7 @@ class CObject
 
 		virtual Void Update() {};
 		virtual Void Init(CGpuUploadTask* upload_list_) {};
-		virtual Void Render(CGpuDrawTask* draw_task_, Uint layer_) {};
+		virtual Void Draw(CGpuDrawTask* draw_task_, class CCamera* camera) {};
 
 		Uint GetObjectId() { return object_id; }
 

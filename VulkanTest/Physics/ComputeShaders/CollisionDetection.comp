@@ -1,0 +1,46 @@
+#version 460
+
+#extension GL_KHR_vulkan_glsl                   : enable
+#extension GL_EXT_samplerless_texture_functions : enable
+#extension GL_EXT_nonuniform_qualifier          : enable
+
+
+struct RigidBody
+{
+	vec4 inertia;
+	vec4 position;
+	mat3 orientation;
+	vec3 orientation_padding;
+	vec4 linear_velocity;
+	vec4 angular_velocity;
+};
+
+struct Collision
+{
+	vec4 intersection_points[48];
+	vec4 best_saperator;
+};
+
+layout(set = 0, binding = 1) readonly buffer _RigidBodeisBuffer
+{
+	RigidBody rigid_bodeis[];
+};
+
+layout(set = 0, binding = 2) buffer _CollisionBuffer
+{
+	Collision collisions[];
+};
+
+
+layout (local_size_x = 8, local_size_y = 8, local_size_z = 1) in;
+void main()
+{
+	if( gl_GlobalInvocationID.x <= gl_GlobalInvocationID.y)
+		return;
+
+	uint firstColliderId   = gl_GlobalInvocationID.x;
+	uint secoundColliderId = gl_GlobalInvocationID.y;
+
+}
+
+ 

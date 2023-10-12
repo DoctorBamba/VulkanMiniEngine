@@ -35,10 +35,16 @@ template<typename T>
 const Matrix4D__<T> Perspective(T angle_, T aspect_, T near_, T far_);
 
 template<class T>
-Void DismantleTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Matrix3D__<T>* orientation_out);
+const Matrix4D__<T> Transform(const Vector3D__<T>& position, const Matrix3D__<T>& orientation, const Vector3D__<T>& scale);
+
+template<typename T>
+inline const Matrix4D__<T> Transform(const Vector3D__<T>& position, const Quaternion& orientation, const Vector3D__<T>& scale);
 
 template<class T>
-Void DismantleTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Quaternion__<T>* orientation_out);
+Void DecomposeTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Matrix3D__<T>* orientation_out);
+
+template<class T>
+Void DecomposeTransform(const Matrix4D__<T>& transform, Vector3D__<T>* position_out, Vector3D__<T>* scale_out, Quaternion__<T>* orientation_out);
 
 template<class T>
 Quaternion__<T> Interpolate(const Quaternion__<T>& start, const Quaternion__<T>& end, Float t);

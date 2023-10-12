@@ -7,14 +7,14 @@ namespace Engine
 {
 	class RendererWindowPort
 	{
-		struct FrameInfo
+		struct TickGraphicsInfo
 		{
 			CFrameBuffer*	target;
 			CGpuDrawTask*	draw_task;
 		};
 
 		public:
-			std::vector<FrameInfo> m_FramesInfo;
+			std::vector<TickGraphicsInfo> m_FramesInfo;
 
 			Uint						buffer_index;
 			VkSemaphore					backbuffer_avalible_semaphore;

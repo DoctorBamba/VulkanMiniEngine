@@ -2,17 +2,17 @@
 
 #include "CAllocator.h"
 
-#define MAXIMUM_DESCRIPTOR_SETS_PER_POOL 4
+#define MAXIMUM_DESCRIPTOR_SETS_PER_POOL 1000000
 
 class CDescriptorPool
 {
 	protected:
         VkDescriptorPool p_DescriptorPool;
 
-        const VkDevice p_DeviceContext;
+        const VkDevice p_Device;
 
 	public:
-        CDescriptorPool(VkDevice device_, Uint descriptors_count_) : p_DeviceContext(device_)
+        CDescriptorPool(VkDevice device_, Uint descriptors_count_) : p_Device(device_)
 		{
             VkDescriptorPoolSize uniforms_size{};
             uniforms_size.type              = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
@@ -30,7 +30,7 @@ class CDescriptorPool
             pool_desc.pPoolSizes    = pool_sizes;
             pool_desc.maxSets       = MAXIMUM_DESCRIPTOR_SETS_PER_POOL;
 
-            if (vkCreateDescriptorPool(p_DeviceContext, &pool_desc, nullptr, &p_DescriptorPool) != VK_SUCCESS)
+            if (vkCreateDescriptorPool(p_Device, &pool_desc, nullptr, &p_DescriptorPool) != VK_SUCCESS)
             {
                 throw std::runtime_error("CDescriptorSet::Constructor -> Failed to create the descriptor pool!");
                 return;
